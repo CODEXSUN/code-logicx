@@ -1,0 +1,4 @@
+interface:
+  display_name: "CodeLogicX Production Update"
+  short_description: "Safely verify and deploy CodeLogicX on its Ubuntu VPS."
+  default_prompt: "Use $codelogicx-production-update to verify, deploy, migrate, clean, and audit a CodeLogicX production release."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Write CodeLogicX Docs"
+  short_description: "Apply CodeLogicX documentation naming and structure rules"
+  default_prompt: "Use $write-codelogicx-docs to create or update a CodeLogicX documentation page."

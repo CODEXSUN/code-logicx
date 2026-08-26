@@ -1,0 +1,23 @@
+[Unit]
+Description=Verify and deploy a CodeLogicX production update
+Documentation=file:///home/codelogicx/assist/deploy.md
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+Environment=CODELOGICX_WATCHER_REPO_DIR=/home/codelogicx
+ExecStart=/usr/local/sbin/codelogicx-update-watcher
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=read-only
+ReadWritePaths=/home/codelogicx /root/.docker /var/lib/codelogicx-update-watcher /var/tmp /run/lock
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=1h
+
+[Install]
+WantedBy=multi-user.target

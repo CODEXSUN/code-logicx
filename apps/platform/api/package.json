@@ -1,0 +1,20 @@
+{
+  "name": "@codelogicx/platform-api",
+  "version": "1.0.84",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@codelogicx/codelogicx-api": "1.0.84",
+    "@codelogicx/framework": "1.0.84",
+    "fastify": "^5.12.1",
+    "kysely": "^0.29.5",
+    "mysql2": "^3.23.3",
+    "socket.io": "^4.8.3",
+    "zod": "^4.4.3"
+  }
+}
