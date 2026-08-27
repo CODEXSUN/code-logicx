@@ -15,26 +15,11 @@ import {
 } from "./file-manager-host.js";
 
 export async function registerCodeLogicXAddons(app: FastifyInstance) {
-  await app.register(
-    async (blogsApp) => {
-      blogsApp.addHook("onRequest", (request, _reply, done) => {
-        if (request.raw.url?.startsWith("/api/platform/public/")) {
-          request.raw.url = request.raw.url.slice("/api/platform".length);
-        }
-        done();
-      });
-      await registerBlogsApi(blogsApp, {
-        authorize: ({ request }) => identityContext(request).authorize("blog.manage"),
-        resolveContext: resolveBlogContext
-      });
-    },
-    { prefix: "/api/platform" }
-  );
-  await app.register(
-    async (fileManagerApp) =>
-      registerFileManagerApi(fileManagerApp, { resolveContext: resolveFileManagerContext }),
-    { prefix: "/api/platform" }
-  );
+  await registerBlogsApi(app, {
+    authorize: ({ request }) => identityContext(request).authorize("blog.manage"),
+    resolveContext: resolveBlogContext
+  });
+  await registerFileManagerApi(app, { resolveContext: resolveFileManagerContext });
 }
 
 async function resolveBlogContext(request: FastifyRequest) {

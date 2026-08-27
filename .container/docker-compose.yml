@@ -51,6 +51,7 @@ services:
       PLATFORM_API_PORT: ${CODELOGICX_API_INTERNAL_PORT:-9150}
       CODELOGICX_ENV_FILE_PATH: /workspace/codelogicx/.env
       CODELOGICX_CODEX_HOME: /var/lib/codelogicx/codex
+      CODELOGICX_WORKSPACE_ROOT: /srv/codelogicx/repositories
       CODELOGICX_AGENT_ALLOWED_ROOTS: /srv/codelogicx/repositories
       CODELOGICX_AGENT_WORKTREE_ROOT: /var/lib/codelogicx/worktrees
     depends_on:

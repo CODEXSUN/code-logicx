@@ -21,7 +21,12 @@ docker exec codelogicx-api sh -lc 'id; git --version'
 docker exec codelogicx-api sh -lc 'test -w "$CODELOGICX_CODEX_HOME"'
 docker exec codelogicx-api sh -lc 'test -w "$CODELOGICX_AGENT_WORKTREE_ROOT"'
 docker exec codelogicx-api sh -lc 'test -w "$CODELOGICX_AGENT_ALLOWED_ROOTS"'
+docker exec codelogicx-api sh -lc 'test -r "$CODELOGICX_WORKSPACE_ROOT" && test -w "$CODELOGICX_WORKSPACE_ROOT"'
 ```
+
+Docker sets `CODELOGICX_WORKSPACE_ROOT` and `CODELOGICX_AGENT_ALLOWED_ROOTS` to the persistent
+`/srv/codelogicx/repositories` volume. Keep both values aligned when changing the mount. The GitHub
+Dashboard returns an empty project list when the repository root is empty; it must not fail the API.
 
 Do not run the API as root, apply recursive `chmod 777`, bake secrets into the image, or mount Git
 metadata without its matching checkout.

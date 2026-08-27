@@ -1,6 +1,6 @@
 {
   "name": "@codelogicx/platform-api",
-  "version": "1.0.89",
+  "version": "1.0.90",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,11 +9,13 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "@codelogicx/codelogicx-api": "1.0.89",
-    "@codelogicx/framework": "1.0.89",
+    "@codelogicx/codelogicx-api": "1.0.90",
+    "@codelogicx/framework": "1.0.90",
     "@codexsun/blog": "*",
     "@codexsun/file-manager": "*",
+    "@socket.io/redis-adapter": "^8.3.0",
     "fastify": "^5.12.1",
+    "ioredis": "^6.0.0",
     "kysely": "^0.29.5",
     "mysql2": "^3.23.3",
     "socket.io": "^4.8.3",

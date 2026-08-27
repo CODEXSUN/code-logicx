@@ -5,6 +5,33 @@ All notable changes to **logicx_code** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.90] - 2026-08-27
+
+### Changed
+
+- Updated web, API, desktop, and mobile version metadata to `1.0.90`.
+- Updated the Android version code to `10090`.
+- Set Docker repository discovery and Agent access to the persistent repository
+  volume.
+- Added direct Redis adapter and client dependencies to the Platform API.
+- Aligned local and production proxy behavior for Blog and File Manager routes.
+- Added deployment checks and operator guidance for repository storage and Redis.
+
+### Fixed
+
+- The GitHub Dashboard now returns an empty project list when its workspace root
+  is unavailable.
+- Blog taxonomy, article, and article-template requests no longer use a
+  duplicated API prefix.
+- File Manager folder and file requests no longer use a duplicated API prefix.
+- The development server no longer opts into the deprecated browser `unload` event.
+
+### Verification
+
+- Passed the focused API and web TypeScript checks, ESLint, and production builds.
+- Passed deployment validation, clean install dry run, and whitespace checks.
+- Production deployment was not part of this release preparation.
+
 ## [1.0.89] - 2026-08-27
 
 ### Added
@@ -32,7 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Aligned messages from the authenticated mobile user on the right side of the
   conversation. Messages from other participants remain on the left side.
 - Added a compact timestamp to each mobile message bubble.
-
 ### Verification
 
 - Built the debug APK successfully with Capacitor and Gradle.

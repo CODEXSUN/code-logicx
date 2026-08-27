@@ -5,6 +5,7 @@ const root = resolve(import.meta.dirname, "..");
 const updater = read("update.sh");
 const setup = read(".container/setup.sh");
 const compose = read(".container/docker-compose.yml");
+const runtimeExample = read(".container/.env.example");
 const deployExample = read(".container/deploy.env.example");
 const watcher = read(".container/update-watcher/codelogicx-update-watcher.sh");
 const watcherInstaller = read(".container/update-watcher/install.sh");
@@ -31,8 +32,16 @@ requireTokens(".container/setup.sh", setup, [
 requireTokens(".container/docker-compose.yml", compose, [
   "name: ${CODELOGICX_COMPOSE_PROJECT:-codelogicx}",
   "CODELOGICX_ENV_FILE_PATH: /workspace/codelogicx/.env",
+  "CODELOGICX_WORKSPACE_ROOT: /srv/codelogicx/repositories",
+  "CODELOGICX_AGENT_ALLOWED_ROOTS: /srv/codelogicx/repositories",
+  "agent-repositories:/srv/codelogicx/repositories",
   "networks: [codelogicx]",
   "host.docker.internal:host-gateway"
+]);
+requireTokens(".container/.env.example", runtimeExample, [
+  "CODELOGICX_WORKSPACE_ROOT=/srv/codelogicx/repositories",
+  "CODELOGICX_AGENT_ALLOWED_ROOTS=/srv/codelogicx/repositories",
+  "REDIS_URL="
 ]);
 requireTokens(".container/scripts/nginx-spa.conf", nginx, [
   'proxy_set_header Upgrade $http_upgrade;',
@@ -41,6 +50,7 @@ requireTokens(".container/scripts/nginx-spa.conf", nginx, [
 ]);
 requireTokens(".container/README.md", containerReadme, [
   "## Existing Redis service",
+  "## Repository storage and GitHub Dashboard",
   "## BullMQ behavior",
   "## WebSocket and Socket.IO",
   "## Normal REST API",

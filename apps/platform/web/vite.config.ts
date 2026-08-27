@@ -147,9 +147,6 @@ export default defineConfig(({ command, mode }) => {
             fs: {
               allow: platformSourceRoots
             },
-            headers: {
-              "Permissions-Policy": "unload=*"
-            },
             host: "127.0.0.1",
             port: requireEnvNumber(runtimeEnv.PLATFORM_WEB_PORT, "PLATFORM_WEB_PORT"),
             warmup: {
@@ -161,18 +158,6 @@ export default defineConfig(({ command, mode }) => {
               ]
             },
             proxy: {
-              "/api/platform/blogs": {
-                changeOrigin: false,
-                target: platformApiTarget(runtimeEnv)
-              },
-              "/api/platform/file-manager": {
-                changeOrigin: false,
-                target: platformApiTarget(runtimeEnv)
-              },
-              "/api/platform/public": {
-                changeOrigin: false,
-                target: platformApiTarget(runtimeEnv)
-              },
               "/api/platform": {
                 changeOrigin: false,
                 rewrite: (path) => path.replace(/^\/api\/platform/u, "") || "/",

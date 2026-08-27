@@ -1,8 +1,42 @@
 # Changelog
 
-Current version: 1.0.89
-Release tag: v-1.0.89
-Changelog label: v 1.0.89
+Current version: 1.0.90
+Release tag: v-1.0.90
+Changelog label: v 1.0.90
+
+## v-1.0.90
+
+### [v 1.0.90] 2026-08-27 2:38 pm - Production API and deployment corrections
+
+#### Database Changes
+
+- Database update: No.
+- No persisted schema, seed, or data changed.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.90.
+- Updated the Android version to `1.0.90` with version code `10090`.
+- Made the GitHub Dashboard return an empty project list when its workspace root
+  is missing or unavailable.
+- Set the Docker workspace root and Agent allowed root to the persistent
+  repository volume.
+- Added direct Platform API dependencies for the Socket.IO Redis adapter and
+  the Redis client.
+- Fixed the production route prefix for Blog and File Manager endpoints.
+- Removed special development proxy routes that hid the production prefix mismatch.
+- Removed the development header that opted into the deprecated browser `unload` event.
+- Added deployment checks and operator guidance for repository storage and Redis.
+
+#### Verification
+
+- Passed Platform API and Platform web TypeScript checks and ESLint.
+- Passed the Platform API and Platform web production builds.
+- Passed the focused CodeLogicX GitHub Dashboard TypeScript check and ESLint.
+- Passed the deployment script check, clean install dry run, and whitespace check.
+- Confirmed that Blog registers taxonomy, article, and article-template routes
+  without the public proxy prefix.
+- Did not deploy these changes to `cx.codexsun.com` during local verification.
 
 ## v-1.0.89
 

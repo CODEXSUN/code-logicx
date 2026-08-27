@@ -65,6 +65,24 @@ chmod 600 .env .container/deploy.env
 
 Do not commit either generated environment file.
 
+## Repository storage and GitHub Dashboard
+
+The API uses `/srv/codelogicx/repositories` for both `CODELOGICX_WORKSPACE_ROOT` and
+`CODELOGICX_AGENT_ALLOWED_ROOTS`. Docker Compose mounts the persistent `agent-repositories` volume
+at that path. The GitHub Dashboard discovers complete Git repositories below this root. An empty
+root is valid and produces an empty project list.
+
+Keep these settings aligned if you customize the mount. Confirm that the unprivileged API user can
+read and write the directory:
+
+```sh
+docker exec codelogicx-api sh -lc \
+  'printf "%s\\n" "$CODELOGICX_WORKSPACE_ROOT"; test -r "$CODELOGICX_WORKSPACE_ROOT"; test -w "$CODELOGICX_WORKSPACE_ROOT"'
+```
+
+Do not point the workspace root at `/workspace/codelogicx`. Application source and managed project
+repositories have separate lifecycles.
+
 ## Application URLs
 
 Use one public HTTPS origin for the web application, REST API, and Socket.IO paths.

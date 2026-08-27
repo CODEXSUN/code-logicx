@@ -1,6 +1,6 @@
 [package]
 name = "codelogicx-desktop"
-version = "1.0.89"
+version = "1.0.90"
 description = "CodeLogicX IDE runtime"
 edition = "2021"
 

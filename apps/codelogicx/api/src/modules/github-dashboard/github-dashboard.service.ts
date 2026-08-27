@@ -48,18 +48,23 @@ export class GithubDashboardService {
   }
 }
 
-function configuredWorkspaceRoot(): string {
+function configuredWorkspaceRoot(): string | null {
   const value = process.env.CODELOGICX_WORKSPACE_ROOT?.trim();
-  if (!value)
-    throw new Error(
-      "CODELOGICX_WORKSPACE_ROOT is required for the GitHub dashboard.",
-    );
-  return resolve(process.cwd(), value);
+  if (!value) return null;
+  const workspaceRoot = resolve(process.cwd(), value);
+  return existsSync(workspaceRoot) ? workspaceRoot : null;
 }
 
-function discoverRepositories(workspaceRoot: string): string[] {
+function discoverRepositories(workspaceRoot: string | null): string[] {
+  if (!workspaceRoot) return [];
   const repositories: string[] = [];
-  for (const entry of readdirSync(workspaceRoot, { withFileTypes: true })) {
+  let entries;
+  try {
+    entries = readdirSync(workspaceRoot, { withFileTypes: true });
+  } catch {
+    return repositories;
+  }
+  for (const entry of entries) {
     if (!entry.isDirectory() || ignoredDirectories.has(entry.name)) continue;
     const path = resolve(workspaceRoot, entry.name);
     try {
