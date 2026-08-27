@@ -1,0 +1,75 @@
+import deploymentFlow from "./production-deployment.svg";
+
+# Production deployment handoff
+
+Use this page when a production checkout has reviewed changes that are not yet in the upstream release.
+
+![Flow from the upstream release through reviewed production patches to the verified deployment](deploymentFlow)
+
+Start at the upstream release. Apply only reviewed production patches, then complete every verification check before removing the recovery stash.
+
+## Current release boundary
+
+The production checkout reached upstream commit `42807d9` for release `1.0.90`.
+
+This release already contains these corrections:
+
+- Redis adapter and client dependencies.
+- The Docker workspace root.
+- Safe empty-root behavior for the GitHub Dashboard.
+- Blog and File Manager API-prefix corrections.
+- The mobile pairing API route.
+- The restored Docs sidebar link.
+
+Do not reapply older local versions of these corrections.
+
+## Production-only patch inventory
+
+The deployment handoff reports these local changes. They are not part of commit `42807d9`.
+
+| Area                 | Production behavior                                                                           | Files named by the handoff                                                                                                                                             |
+| -------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File Manager storage | A named volume mounts at `/storage`. The API uses `FILE_MANAGER_LOCAL_ROOT=/storage`.         | `.container/docker-compose.yml`, `.container/deploy.env.example`, `.container/setup.sh`, `.container/scripts/Dockerfile.stack`, `.container/scripts/api-entrypoint.sh` |
+| Runtime environment  | The API entrypoint gives UID 1000 access to the mounted runtime `.env` and keeps mode `0600`. | `.container/scripts/api-entrypoint.sh`                                                                                                                                 |
+| Module checks        | The module inventory includes the existing Ideas and Messaging modules.                       | `tools/check-module-boundaries.mjs`                                                                                                                                    |
+
+The reported entrypoint creates `/storage` with mode `0777` before it changes to UID 1000. This is deployed behavior, not a general permission recommendation. Review a narrower owner or group mode before upstream adoption.
+
+The protected `.container/deploy.env` file remains root-owned with mode `0600`. The API container does not mount this file.
+
+The supplied handoff also names updater-policy and Ideas sanitizer changes. It does not provide their file-level details. Inspect the production diff before moving either change upstream.
+
+## Development-to-Docker update procedure
+
+1. Commit or stash local source changes.
+2. Run `git fetch --prune origin`.
+3. Inspect `git diff --name-status HEAD..origin/main` for overlap with production patches.
+4. Run `git pull --ff-only` after the overlap review passes.
+5. Reapply only changes that are still absent from upstream.
+6. Prefer the official release package and lockfile when upstream contains the same dependency fix.
+7. Align `CODELOGICX_VERSION`, `CODELOGICX_IMAGE_TAG`, and `CODELOGICX_MIGRATION_COMPATIBLE_VERSION` with `package.json`.
+8. Keep credentials and topology values unchanged during version alignment.
+9. Run `bash update.sh --check`.
+10. Use `--allow-dirty` only for reviewed production changes that are not yet upstream.
+11. Run `bash update.sh --yes` after the check succeeds.
+12. Do not bypass a failed verification image, backup, migration, seed, replacement, or health check.
+
+## Production verification
+
+Verify these items after the update:
+
+- The public health endpoint.
+- Administrator login.
+- The GitHub Dashboard.
+- Authenticated WebSocket-only connections.
+- Redis returns `PONG`.
+- `/storage` exists and the API user can read and write it.
+- The running API and web image tags match the release.
+- The SQL backup and its SHA-256 file exist.
+- Deployment metadata records the expected source commit and dirty state.
+
+Keep the named recovery stash until all public checks pass. Keep the updater backup and deployment metadata after verification.
+
+## Reproducibility note
+
+A production image built with local patches is not reproducible from the upstream commit alone. The deployment metadata must keep the dirty source state until those patches move upstream.

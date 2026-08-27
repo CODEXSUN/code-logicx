@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created the cloud mobile release artifact `code-logicx-90.apk`.
 - Updated the mobile release manifest for version `1.0.90` and version code
   `10090`.
+- Added a Production deployment page to Docs with the upstream boundary,
+  production-only patch inventory, update procedure, and verification checks.
 
 ### Changed
 

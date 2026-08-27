@@ -40,6 +40,13 @@ export const docsPages = [
     "Foundation",
     () => import("../../../../../../assist/documentation/CHANGELOG.md"),
     "assist/documentation/CHANGELOG.md"
+  ),
+  page(
+    "production-deployment",
+    "Production deployment",
+    "Update a production checkout that contains reviewed local patches.",
+    "Operations",
+    () => import("./content/production-deployment.mdx")
   )
 ] as const;
 

@@ -28,6 +28,8 @@ Changelog label: v 1.0.90
 - Removed the development header that opted into the deprecated browser `unload` event.
 - Added deployment checks and operator guidance for repository storage and Redis.
 - Restored the Docs link in the main application sidebar.
+- Added a Production deployment Docs page for production-only patches and
+  release verification.
 
 #### Verification
 
