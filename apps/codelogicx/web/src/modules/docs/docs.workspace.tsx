@@ -163,7 +163,7 @@ export function DocsWorkspace() {
           </MDXProvider>
           <PageNavigation nextPage={nextPage} onSelect={selectPage} previousPage={previousPage} />
           <footer className="mt-12 border-t pt-5 text-sm text-muted-foreground">
-            Edit the MDX source in <code>apps/codelogicx/web/src/modules/docs/content</code>.
+            Edit the source in <code>{selected.sourcePath}</code>.
           </footer>
         </div>
       </article>
@@ -254,11 +254,14 @@ const mdxComponents = {
     <strong className="font-semibold text-foreground" {...props} />
   ),
   code: (props: ComponentPropsWithoutRef<"code">) => (
-    <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground" {...props} />
+    <code
+      className="break-all rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground"
+      {...props}
+    />
   ),
   pre: (props: ComponentPropsWithoutRef<"pre">) => (
     <pre
-      className="mt-4 overflow-x-auto rounded-xl border bg-muted/40 p-4 text-sm [&_code]:bg-transparent [&_code]:p-0"
+      className="mt-4 overflow-x-auto rounded-xl border bg-muted/40 p-4 text-sm [&_code]:break-normal [&_code]:bg-transparent [&_code]:p-0"
       {...props}
     />
   ),

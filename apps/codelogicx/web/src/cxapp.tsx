@@ -1,6 +1,7 @@
 import type { SidemenuItem } from "@codelogicx/ui/blocks/menu/sidemenu/sub/sidemenu-section";
 import type { TopMenuWorkspaceItem } from "@codelogicx/ui/blocks/menu/sidemenu/top-menu";
 import {
+  BookOpenIcon,
   FolderKanbanIcon,
   GitBranchIcon,
   LayoutDashboardIcon,
@@ -244,6 +245,12 @@ export const codelogicxWebBundle = Object.freeze({
         isActive: activeWorkspaceId === "tasks",
         title: "Todos",
         url: "/app/codelogicx/tasks"
+      },
+      {
+        icon: BookOpenIcon,
+        isActive: activeWorkspaceId === "docs",
+        title: "Docs",
+        url: "/app/codelogicx/docs"
       }
     ];
   },

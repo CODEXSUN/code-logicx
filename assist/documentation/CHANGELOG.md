@@ -27,6 +27,7 @@ Changelog label: v 1.0.90
 - Removed special development proxy routes that hid the production prefix mismatch.
 - Removed the development header that opted into the deprecated browser `unload` event.
 - Added deployment checks and operator guidance for repository storage and Redis.
+- Restored the Docs link in the main application sidebar.
 
 #### Verification
 

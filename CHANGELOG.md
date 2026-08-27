@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.90] - 2026-08-27
 
+### Added
+
+- Created the cloud mobile release artifact `code-logicx-90.apk`.
+- Updated the mobile release manifest for version `1.0.90` and version code
+  `10090`.
+
 ### Changed
 
 - Updated web, API, desktop, and mobile version metadata to `1.0.90`.
@@ -16,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added direct Redis adapter and client dependencies to the Platform API.
 - Aligned local and production proxy behavior for Blog and File Manager routes.
 - Added deployment checks and operator guidance for repository storage and Redis.
+- Routed cloud Mobile Connect redemption and session requests through the
+  `/api/platform` endpoint.
+- Restored the Docs link in the main application sidebar.
 
 ### Fixed
 
@@ -25,11 +34,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   duplicated API prefix.
 - File Manager folder and file requests no longer use a duplicated API prefix.
 - The development server no longer opts into the deprecated browser `unload` event.
+- Fixed QR pairing on `cx.codexsun.com`. The mobile application no longer tries
+  to parse the web server HTML response as JSON.
+- Added a clear mobile API routing error when a server returns non-JSON content.
+
+### Security
+
+- Recorded APK SHA-256 checksum
+  `f5e4ef0c13a6271018ab75f1105d8c99bf9c955bc9467879dd6ad607a1db38b7`
+  in the mobile release manifest.
 
 ### Verification
 
 - Passed the focused API and web TypeScript checks, ESLint, and production builds.
 - Passed deployment validation, clean install dry run, and whitespace checks.
+- Verified that the old cloud pairing route returns HTML and the corrected
+  `/api/platform` route returns the platform JSON envelope.
+- Built the `1.0.90` cloud APK with pairing bypass disabled.
+- Passed the mobile and Platform API TypeScript checks.
+- The emulator disconnected before the final APK installation check.
 - Production deployment was not part of this release preparation.
 
 ## [1.0.89] - 2026-08-27

@@ -31,7 +31,7 @@ export class MobileApi {
     const pairing = JSON.parse(payload) as { endpoint?: string; secret?: string; ticketId?: string; version?: number };
     if (pairing.version !== 1 || !pairing.endpoint || !pairing.secret || !pairing.ticketId) throw new Error("This is not a CodeLogicX Mobile Connect code.");
     const endpoint = allowedEndpoint(pairing.endpoint);
-    const session = await this.request<{ accessToken: string }>("/auth/mobile-pairing/redeem", { body: JSON.stringify({ secret: pairing.secret, ticketId: pairing.ticketId }), method: "POST" }, false, endpoint);
+    const session = await this.request<{ accessToken: string }>(platformPath("/auth/mobile-pairing/redeem", endpoint), { body: JSON.stringify({ secret: pairing.secret, ticketId: pairing.ticketId }), method: "POST" }, false, endpoint);
     localStorage.setItem(tokenKey, session.accessToken);
     localStorage.setItem(endpointKey, endpoint);
   }
@@ -51,7 +51,7 @@ export class MobileApi {
     return { ideas: value<Idea[]>(0), projects: projectResult.records?.project ?? [], projectRecords, todos: value<Todo[]>(2), conversations: value<Conversation[]>(3) };
   }
 
-  getSession(): Promise<Session> { return this.request<Session>("/auth/session"); }
+  getSession(): Promise<Session> { const endpoint = mobileEndpoint(); return this.request<Session>(platformPath("/auth/session", endpoint), {}, true, endpoint); }
 
   createIdea(input: IdeaInput): Promise<Idea> {
     const categoryColors: Record<string, string> = { Design: "#db2777", Engineering: "#7c3aed", General: "#2563eb", Operations: "#ea580c", Product: "#0891b2", Research: "#4f46e5" };
@@ -93,6 +93,8 @@ export class MobileApi {
   private async request<T>(path: string, options: RequestInit = {}, authenticated = true, endpoint = mobileEndpoint()): Promise<T> {
     const token = localStorage.getItem(tokenKey);
     const response = await fetch(`${endpoint}${path}`, { ...options, headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...(authenticated && token ? { Authorization: `Bearer ${token}` } : {}) } });
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) throw new Error("This CodeLogicX site is not routing the mobile API. Update the application or contact the site administrator.");
     const envelope = await response.json() as Envelope<T>;
     if (!response.ok || !envelope.success) throw new Error(envelope.success ? "Request failed" : envelope.error.message);
     return envelope.data;
@@ -103,6 +105,7 @@ export const mobileApi = new MobileApi();
 
 function mobileEndpoint() { return (localStorage.getItem(endpointKey) || import.meta.env.VITE_MOBILE_API_URL).replace(/\/+$/u, ""); }
 function allowedEndpoint(value: string) { const url = new URL(value); const local = ["127.0.0.1", "10.0.2.2", "localhost"].includes(url.hostname); if (url.protocol !== "https:" && !(local && url.protocol === "http:")) throw new Error("Mobile Connect requires a secure HTTPS site."); return url.origin; }
+function platformPath(path: string, endpoint: string) { const host = new URL(endpoint).hostname; return ["127.0.0.1", "10.0.2.2", "localhost"].includes(host) ? path : `/api/platform${path}`; }
 function preserveCloudSession() { const token = localStorage.getItem(tokenKey); const endpoint = localStorage.getItem(endpointKey); if (token && !localStorage.getItem(localBackendKey)) localStorage.setItem(cloudTokenKey, token); if (endpoint && !localStorage.getItem(localBackendKey)) localStorage.setItem(cloudEndpointKey, endpoint); }
 function restoreCloudSession() { const token = localStorage.getItem(cloudTokenKey); const endpoint = localStorage.getItem(cloudEndpointKey); token ? localStorage.setItem(tokenKey, token) : localStorage.removeItem(tokenKey); endpoint ? localStorage.setItem(endpointKey, endpoint) : localStorage.removeItem(endpointKey); }
 function escapeHtml(value: string) { return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }

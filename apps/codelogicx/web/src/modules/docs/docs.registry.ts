@@ -5,6 +5,7 @@ export type DocPage = {
   description: string;
   group: string;
   slug: string;
+  sourcePath: string;
   title: string;
 };
 
@@ -13,8 +14,9 @@ const page = (
   title: string,
   description: string,
   group: string,
-  load: () => Promise<{ default: ComponentType }>
-): DocPage => ({ component: lazy(load), description, group, slug, title });
+  load: () => Promise<{ default: ComponentType }>,
+  sourcePath = `apps/codelogicx/web/src/modules/docs/content/${slug}.mdx`
+): DocPage => ({ component: lazy(load), description, group, slug, sourcePath, title });
 
 export const docsPages = [
   page(
@@ -30,6 +32,14 @@ export const docsPages = [
     "Understand product ownership and shared platform boundaries.",
     "Foundation",
     () => import("./content/product-structure.mdx")
+  ),
+  page(
+    "changelog",
+    "ChangeLog",
+    "Read the CodeLogicX release history and verification notes.",
+    "Foundation",
+    () => import("../../../../../../assist/documentation/CHANGELOG.md"),
+    "assist/documentation/CHANGELOG.md"
   )
 ] as const;
 
