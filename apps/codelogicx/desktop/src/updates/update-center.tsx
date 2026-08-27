@@ -68,16 +68,11 @@ export function UpdateCenter({
 }) {
   return (
     <div className="update-backdrop" role="presentation">
-      <section
-        aria-label="Update"
-        aria-modal="true"
-        className="update-center"
-        role="dialog"
-      >
+      <section aria-label="Update" aria-modal="true" className="update-center" role="dialog">
         <header>
           <div>
             <strong>CodeLogicX updates</strong>
-            <small>Signed releases from CODEXSUN/codelogicx</small>
+            <small>Signed releases from CODEXSUN/code-logicx</small>
           </div>
           <button aria-label="Close updates" onClick={onClose} type="button">
             <X size={16} />

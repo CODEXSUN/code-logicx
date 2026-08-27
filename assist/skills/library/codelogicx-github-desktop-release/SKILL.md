@@ -81,8 +81,8 @@ not deploy the VPS or publish application services.
 Use GitHub CLI to inspect the workflow until it completes successfully:
 
 ```powershell
-gh run list --repo CODEXSUN/codelogicx --workflow desktop-release.yml --limit 3
-gh run view <run-id> --repo CODEXSUN/codelogicx --json status,conclusion,url,jobs
+gh run list --repo CODEXSUN/code-logicx --workflow desktop-release.yml --limit 3
+gh run view <run-id> --repo CODEXSUN/code-logicx --json status,conclusion,url,jobs
 ```
 
 Then verify that the public, non-draft `desktop-v<version>` release contains:
@@ -93,7 +93,7 @@ Then verify that the public, non-draft `desktop-v<version>` release contains:
 - `latest.json`
 
 ```powershell
-gh release view desktop-v<version> --repo CODEXSUN/codelogicx --json url,isDraft,isPrerelease,assets
+gh release view desktop-v<version> --repo CODEXSUN/code-logicx --json url,isDraft,isPrerelease,assets
 ```
 
 Report the commit, tag, workflow URL, release URL, asset names, every command,

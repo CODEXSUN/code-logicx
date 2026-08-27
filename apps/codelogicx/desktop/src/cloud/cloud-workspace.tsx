@@ -9,8 +9,7 @@ import {
   LogOut,
   MessageCircle,
   RefreshCw,
-  Server,
-  Users
+  Server
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { desktopCloudApi } from "./cloud-api";

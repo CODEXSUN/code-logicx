@@ -1,8 +1,33 @@
 # Changelog
 
-Current version: 1.0.87
-Release tag: v-1.0.87
-Changelog label: v 1.0.87
+Current version: 1.0.88
+Release tag: v-1.0.88
+Changelog label: v 1.0.88
+
+## v-1.0.88
+
+### [v 1.0.88] 2026-08-27 11:42 am - Windows desktop download and GitHub release
+
+#### Database Changes
+
+- Database update: No.
+- No persisted schema, seed, or data changed.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.88.
+- Added a Desktop release page in Settings with the installed version, direct Windows setup download, and published changelog link.
+- Wired the desktop updater, release manifest, validator, and release workflow to the actual `CODEXSUN/code-logicx` GitHub repository.
+- Kept installation user-approved and retained Tauri updater signature verification.
+
+#### Verification
+
+- Passed the desktop TypeScript check, ESLint, 42 desktop tests, and the desktop production build.
+- Added the missing TypeScript 6 compiler alias required by ESLint while the application uses TypeScript 7.
+- Added the OpenCode executable package and direct platform-binary fallback required by clean desktop release builds.
+- Passed the local WiX MSI, setup EXE, updater signature, release manifest, and checksum validation for version 1.0.88.
+- Passed the repository version consistency and whitespace checks.
+- The GitHub release workflow will run a clean dependency install, desktop checks, Rust tests, WiX packaging, updater signing, and release asset validation.
 
 ## v-1.0.87
 

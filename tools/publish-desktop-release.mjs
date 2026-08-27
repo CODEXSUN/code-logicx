@@ -178,7 +178,7 @@ function copyArtifact(source, destination, role) {
 function writeUpdaterManifest(installerName) {
   const signature = readFileSync(join(bundleRoot, `${installerName}.sig`), "utf8").trim();
   const tag = `desktop-v${version}`;
-  const url = `https://github.com/CODEXSUN/codelogicx/releases/download/${tag}/${installerName}`;
+  const url = `https://github.com/CODEXSUN/code-logicx/releases/download/${tag}/${installerName}`;
   const manifest = {
     version,
     notes: `CodeLogicX ${version}`,

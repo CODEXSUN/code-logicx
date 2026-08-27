@@ -23,13 +23,26 @@ copyOpenCodeBinary();
 console.log(`Prepared Codex ${target} sidecars.`);
 
 function copyOpenCodeBinary() {
-  const source = resolve(repositoryRoot, "node_modules", "opencode-ai", "bin", "opencode.exe");
+  const packageNames = {
+    "aarch64-apple-darwin": "opencode-darwin-arm64",
+    "aarch64-pc-windows-msvc": "opencode-windows-arm64",
+    "x86_64-apple-darwin": "opencode-darwin-x64",
+    "x86_64-pc-windows-msvc": "opencode-windows-x64"
+  };
+  const platformPackage = packageNames[target];
+  const candidates = [
+    resolve(repositoryRoot, "node_modules", "opencode-ai", "bin", `opencode${executableSuffix}`),
+    platformPackage
+      ? resolve(repositoryRoot, "node_modules", platformPackage, "bin", `opencode${executableSuffix}`)
+      : ""
+  ].filter(Boolean);
+  const source = candidates.find((candidate) => existsSync(candidate) && statSync(candidate).size > 1_000_000);
   const destination = resolve(
     repositoryRoot,
     "apps/codelogicx/desktop/src-tauri/binaries",
     `opencode-${target}${executableSuffix}`
   );
-  if (!existsSync(source) || statSync(source).size < 1_000_000) {
+  if (!source) {
     if (!process.env.CI && existsSync(destination) && statSync(destination).size > 1_000_000) {
       console.warn(
         `Using the existing OpenCode sidecar for ${target}; run npm install from the repository root to restore its package source.`

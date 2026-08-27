@@ -1,6 +1,6 @@
 {
   "name": "@codelogicx/ui",
-  "version": "1.0.87",
+  "version": "1.0.88",
   "private": true,
   "description": "CodeLogicX-owned design system and workspace primitives",
   "type": "module",

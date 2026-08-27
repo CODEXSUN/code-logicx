@@ -26,12 +26,13 @@ function changedFiles() {
 function groupFiles(files) {
   const definitions = [
     ["Desktop database and native commands", /^apps\/codelogicx\/desktop\/src-tauri\/(?:migrations|src\/)/u],
-    ["Desktop workspace and agent experience", /^apps\/codelogicx\/desktop\/src\/(?:(?:workspaces|shell|services|contracts|standalone\/compass-runner)\/|styles\.css$)/u],
+    ["Desktop workspace and agent experience", /^apps\/codelogicx\/desktop\/src\/(?:(?:workspaces|shell|services|contracts|updates|cloud|standalone\/compass-runner)\/|styles\.css$)/u],
     ["Desktop icons and packaging", /^apps\/codelogicx\/desktop\/(?:src-tauri\/icons|src-tauri\/(?:Cargo|tauri\.conf)|package\.json)/u],
     ["Local AI environment", /^\.container\/local-ai\//u],
     ["Application and package versions", /^(?:package(?:-lock)?\.json|apps\/[^/]+\/[^/]+\/package\.json|packages\/[^/]+\/package\.json)$/u],
     ["Runtime configuration and repository hygiene", /^(?:\.env\.example|\.gitignore)$/u],
     ["Release documentation and skills", /^assist\/(?:documentation|skills|AGENT-GUIDE\.md|README\.md)/u],
+    ["Release workflows", /^\.github\/workflows\//u],
     ["Release tools", /^tools\//u]
   ];
   const remaining = new Set(files);

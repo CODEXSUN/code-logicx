@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import { WorkflowProgressReporter } from "./github-release-progress.mjs";
 
 const root = resolve(import.meta.dirname, "..");
-const repository = "CODEXSUN/codelogicx";
+const repository = "CODEXSUN/code-logicx";
 const workflow = "desktop-release.yml";
 
 export class GitHubReleasePublisher {

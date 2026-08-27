@@ -1,6 +1,6 @@
 {
   "name": "code-logicx",
-  "version": "1.0.87",
+  "version": "1.0.88",
   "private": true,
   "packageManager": "npm@12.0.1",
   "description": "CodeLogicX developer and engineering orchestration workspace",
@@ -54,6 +54,8 @@
     "version:bump": "node tools/repository-release.mjs version:bump",
     "check:versions": "node tools/repository-release.mjs check:versions",
     "github:now": "node tools/github-helper.mjs",
+    "github:release": "node tools/github-release.mjs",
+    "release:scope": "node tools/release-scope.mjs",
     "env:jwt-secret": "node tools/env-jwt-secret.mjs"
   },
   "devDependencies": {
@@ -69,10 +71,12 @@
     "@vitejs/plugin-react": "^6.1.0",
     "eslint": "^10.8.1",
     "prettier": "^3.9.6",
+    "opencode-ai": "1.18.23",
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2",
+    "typescript-eslint-compiler": "npm:typescript@6.0.3",
     "vite": "^8.2.2"
   },
   "engines": {

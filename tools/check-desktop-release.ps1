@@ -70,7 +70,7 @@ Assert-Equal `
 
 $updater = Get-Content -Raw (Join-Path $releaseRoot "updater\latest.json") | ConvertFrom-Json
 $platform = $updater.platforms."windows-x86_64"
-$expectedUrl = "https://github.com/CODEXSUN/codelogicx/releases/download/desktop-v$version/$installerName"
+$expectedUrl = "https://github.com/CODEXSUN/code-logicx/releases/download/desktop-v$version/$installerName"
 Assert-Equal $updater.version $version "updater version"
 Assert-Equal $platform.url $expectedUrl "updater URL"
 if ([string]::IsNullOrWhiteSpace($platform.signature)) {

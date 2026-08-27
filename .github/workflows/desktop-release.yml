@@ -26,7 +26,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --allow-remote=all
 
       - name: Verify release version
         if: startsWith(github.ref, 'refs/tags/')

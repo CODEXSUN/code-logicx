@@ -36,6 +36,7 @@ import { desktopClient, getFallbackAgentConfig } from "../services/desktop-clien
 import type { AgentConfig, AgentProvider, ProviderConfig } from "../contracts/desktop";
 import type { Workspace } from "../contracts/desktop";
 import { WorkspaceIdentitySettings } from "./workspace-identity-settings";
+import desktopPackage from "../../package.json";
 
 export function openExternalUrl(url: string) {
   try {
@@ -53,6 +54,7 @@ export function openExternalUrl(url: string) {
 
 export type SettingsSection =
   | "general"
+  | "desktop-release"
   | "workspace-identity"
   | "agent-overview"
   | "provider-codex"
@@ -335,6 +337,15 @@ export function SettingsPanel({
 
           <button
             type="button"
+            className={`sidebar-item${activeSection === "desktop-release" ? " active" : ""}`}
+            onClick={() => setActiveSection("desktop-release")}
+          >
+            <Download size={16} className="sidebar-icon" />
+            <span className="sidebar-label">Desktop release</span>
+          </button>
+
+          <button
+            type="button"
             className={`sidebar-item${activeSection === "workspace-identity" ? " active" : ""}`}
             onClick={() => setActiveSection("workspace-identity")}
           >
@@ -400,6 +411,7 @@ export function SettingsPanel({
           )}
 
           {activeSection === "general" && <GeneralSettingsTab />}
+          {activeSection === "desktop-release" && <DesktopReleaseTab />}
           {activeSection === "workspace-identity" && (
             <WorkspaceIdentitySettings
               currentWorkspace={currentWorkspace}
@@ -499,6 +511,54 @@ function GeneralSettingsTab() {
           <div className="setting-hint">Files auto-save on focus loss</div>
         </div>
       </div>
+    </section>
+  );
+}
+
+function DesktopReleaseTab() {
+  const version = desktopPackage.version;
+  const releaseUrl = `https://github.com/CODEXSUN/code-logicx/releases/tag/desktop-v${version}`;
+  const downloadUrl = `https://github.com/CODEXSUN/code-logicx/releases/latest/download/CodeLogicX_Setup_${version}_x64.exe`;
+
+  return (
+    <section className="settings-section desktop-release-settings">
+      <div className="section-header">
+        <h2>CodeLogicX Desktop</h2>
+        <p className="section-description">
+          Download the current Windows release or read its published changes on GitHub.
+        </p>
+      </div>
+      <div className="desktop-release-card">
+        <span className="desktop-release-icon">
+          <Download size={22} />
+        </span>
+        <div>
+          <small>Installed version</small>
+          <h3>CodeLogicX {version}</h3>
+          <p>Windows x64 · WiX installer · Tauri signed updater</p>
+        </div>
+        <span className="desktop-release-version">v{version}</span>
+      </div>
+      <div className="desktop-release-actions">
+        <button
+          className="settings-save-inline"
+          onClick={() => openExternalUrl(downloadUrl)}
+          type="button"
+        >
+          <Download size={16} /> Download setup EXE
+        </button>
+        <button
+          className="settings-save-inline secondary"
+          onClick={() => openExternalUrl(releaseUrl)}
+          type="button"
+        >
+          <ExternalLink size={16} /> View changelog on GitHub
+        </button>
+      </div>
+      <p className="setting-hint">
+        Automatic updates use the same GitHub release and still require approval before
+        installation.
+      </p>
     </section>
   );
 }

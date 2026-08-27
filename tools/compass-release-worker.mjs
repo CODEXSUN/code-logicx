@@ -121,9 +121,9 @@ async function publish() {
   const version = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")).version;
   const tag = `desktop-v${version}`;
   event("result", "Release workflow completed and its public assets were verified.", {
-    releaseUrl: `https://github.com/CODEXSUN/codelogicx/releases/tag/${tag}`,
+    releaseUrl: `https://github.com/CODEXSUN/code-logicx/releases/tag/${tag}`,
     tag,
-    workflowUrl: "https://github.com/CODEXSUN/codelogicx/actions/workflows/desktop-release.yml"
+    workflowUrl: "https://github.com/CODEXSUN/code-logicx/actions/workflows/desktop-release.yml"
   });
 }
 

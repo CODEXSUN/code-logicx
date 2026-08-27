@@ -2128,6 +2128,14 @@ button.tree-row:hover,
 .settings-save-inline {
   width: max-content;
 }
+.desktop-release-settings { max-width: 760px; }
+.desktop-release-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; margin-top: 22px; padding: 22px; border: 1px solid var(--border); border-radius: 12px; }
+.desktop-release-icon { display: flex; width: 46px; height: 46px; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 10px; background: var(--muted-surface); color: var(--accent); }
+.desktop-release-card small, .desktop-release-card p { color: var(--muted); }
+.desktop-release-card h3, .desktop-release-card p { margin: 3px 0 0; }
+.desktop-release-version { padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; font-weight: 700; }
+.desktop-release-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 12px; }
+.desktop-release-actions button.secondary { border: 1px solid var(--border); background: transparent; color: var(--foreground); }
 .work-group-setup {
   background: var(--background);
   display: block;
