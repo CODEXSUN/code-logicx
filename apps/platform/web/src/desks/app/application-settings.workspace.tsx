@@ -3,6 +3,9 @@ import QRCode from "qrcode";
 import {
   CopyIcon,
   DatabaseZapIcon,
+  DownloadIcon,
+  ExternalLinkIcon,
+  LaptopIcon,
   QrCodeIcon,
   ShieldAlertIcon,
   SmartphoneIcon
@@ -24,10 +27,63 @@ import { createMobilePairing, logout } from "../../shared/api/platform-api";
 export function ApplicationSettingsWorkspace({
   page = "clear-cache"
 }: {
-  page?: "clear-cache" | "mobile-connect";
+  page?: "clear-cache" | "desktop-application" | "mobile-connect";
 }) {
+  if (page === "desktop-application") return <DesktopApplicationWorkspace />;
   if (page === "mobile-connect") return <MobileConnectWorkspace />;
   return <ClearCacheWorkspace />;
+}
+
+function DesktopApplicationWorkspace() {
+  const version = __APP_VERSION__;
+  const downloadUrl = `https://github.com/CODEXSUN/code-logicx/releases/latest/download/CodeLogicX_Setup_${version}_x64.exe`;
+  const releaseUrl = `https://github.com/CODEXSUN/code-logicx/releases/tag/desktop-v${version}`;
+
+  return (
+    <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl py-6 lg:w-[calc(100%-3rem)] lg:py-10">
+      <header className="max-w-2xl">
+        <h1 className="text-2xl font-semibold tracking-tight">Desktop application</h1>
+        <p className="pt-2 text-sm leading-6 text-muted-foreground">
+          Install CodeLogicX for Windows and keep this developer portal close to your local work.
+        </p>
+      </header>
+
+      <section className="mt-8 flex max-w-3xl flex-col gap-6 border-t py-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+            <LaptopIcon className="size-5" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-semibold">CodeLogicX Desktop</h2>
+              <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                v{version}
+              </span>
+            </div>
+            <p className="max-w-xl pt-1 text-sm leading-6 text-muted-foreground">
+              Windows x64 installer with local projects, Ideas, tasks, Messenger, and secure cloud
+              connection support.
+            </p>
+            <a
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium underline-offset-4 hover:underline"
+              href={releaseUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              View release notes <ExternalLinkIcon className="size-3.5" />
+            </a>
+          </div>
+        </div>
+
+        <Button asChild className="shrink-0">
+          <a href={downloadUrl}>
+            <DownloadIcon />
+            Download for Windows
+          </a>
+        </Button>
+      </section>
+    </main>
+  );
 }
 
 function ClearCacheWorkspace() {

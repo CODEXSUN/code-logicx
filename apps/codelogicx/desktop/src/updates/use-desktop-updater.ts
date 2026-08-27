@@ -1,7 +1,7 @@
 import { getVersion } from "@tauri-apps/api/app";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check, type Update } from "@tauri-apps/plugin-updater";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import desktopPackage from "../../package.json";
 
 export type UpdatePhase =
@@ -70,6 +70,12 @@ export function useDesktopUpdater(): DesktopUpdateState {
       setPhase("idle");
     }
   }, []);
+
+  useEffect(() => {
+    if (!("__TAURI_INTERNALS__" in window)) return;
+    const startupCheck = window.setTimeout(() => void checkForUpdate(), 4_000);
+    return () => window.clearTimeout(startupCheck);
+  }, [checkForUpdate]);
 
   const installAndRestart = useCallback(async () => {
     if (!updateRef.current || phase !== "ready") return;

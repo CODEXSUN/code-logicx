@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { DatabaseZapIcon, EyeIcon, EyeOffIcon, Settings2Icon, ShieldCheckIcon, SmartphoneIcon } from "lucide-react";
+import { DatabaseZapIcon, EyeIcon, EyeOffIcon, LaptopIcon, Settings2Icon, ShieldCheckIcon, SmartphoneIcon } from "lucide-react";
 import { codelogicxWebBundle } from "@codelogicx/codelogicx-web";
 import { honeyChatClient } from "@codelogicx/codelogicx-web/modules/honey";
 import { useNotificationCenter } from "@codelogicx/codelogicx-web/modules/notification";
@@ -43,7 +43,11 @@ export function AppDesk() {
   const workspace = codelogicxWebBundle.resolveWorkspace(pathname);
   const addonDesk = resolveAddonDesk(pathname);
   const showingSettings = pathname.startsWith("/app/settings");
-  const settingsPage = pathname === "/app/settings/mobile-connect" ? "mobile-connect" : "clear-cache";
+  const settingsPage = pathname === "/app/settings/mobile-connect"
+    ? "mobile-connect"
+    : pathname === "/app/settings/desktop-application"
+      ? "desktop-application"
+      : "clear-cache";
   const invalidIdentityPage = Boolean(
     identityPage && identityPage !== "identity.profile" && !administrator
   );
@@ -64,7 +68,11 @@ export function AppDesk() {
   const showingIdentity = Boolean(identityPage && !invalidIdentityPage);
   const showingGitHub = workspace?.group === "GitHub";
   const headerTitle = showingSettings
-      ? settingsPage === "mobile-connect" ? "Mobile Connect" : "Clear cache"
+      ? settingsPage === "mobile-connect"
+        ? "Mobile Connect"
+        : settingsPage === "desktop-application"
+          ? "Desktop application"
+          : "Clear cache"
     : showingIdentity
       ? identityTitle(identityPage!)
       : (addonDesk?.workspace.title ?? workspace?.title ?? "Engineering Command Center");
@@ -166,12 +174,13 @@ export function AppDesk() {
   );
 }
 
-function buildApplicationMenu(activeWorkspaceId: string, honeyVisible: boolean, navigate: ReturnType<typeof useNavigate>, settingsPage: "clear-cache" | "mobile-connect", toggleHoney: () => void) {
+function buildApplicationMenu(activeWorkspaceId: string, honeyVisible: boolean, navigate: ReturnType<typeof useNavigate>, settingsPage: "clear-cache" | "desktop-application" | "mobile-connect", toggleHoney: () => void) {
   return [
     ...codelogicxWebBundle.menuItems(activeWorkspaceId),
     {
       icon: Settings2Icon,
       items: [
+        { icon: LaptopIcon, isActive: settingsPage === "desktop-application", onSelect: () => void navigate({ to: "/app/settings/desktop-application" }), title: "Desktop application" },
         { icon: SmartphoneIcon, isActive: settingsPage === "mobile-connect", onSelect: () => void navigate({ to: "/app/settings/mobile-connect" }), title: "Mobile Connect" },
         { icon: DatabaseZapIcon, isActive: settingsPage === "clear-cache", onSelect: () => void navigate({ to: "/app/settings" }), title: "Clear cache" },
         { icon: honeyVisible ? EyeOffIcon : EyeIcon, onSelect: toggleHoney, title: honeyVisible ? "Hide Honey" : "Show Honey" }

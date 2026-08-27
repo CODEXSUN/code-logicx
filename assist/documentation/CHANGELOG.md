@@ -1,8 +1,37 @@
 # Changelog
 
-Current version: 1.0.88
-Release tag: v-1.0.88
-Changelog label: v 1.0.88
+Current version: 1.0.89
+Release tag: v-1.0.89
+Changelog label: v 1.0.89
+
+## v-1.0.89
+
+### [v 1.0.89] 2026-08-27 12:30 pm - Desktop settings and automatic updates
+
+#### Database Changes
+
+- Database update: No.
+- No persisted schema, seed, or data changed.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.89.
+- Added a Desktop application page to the web app Settings menu.
+- Added direct links to the versioned Windows installer and GitHub release notes.
+- Added an automatic signed update check four seconds after the installed desktop app starts.
+- Kept user approval before the desktop app installs an update and restarts.
+- Used the Tauri in-place update flow to replace application files without removing settings, workspace connections, or user data.
+
+#### Verification
+
+- Passed `npm.cmd run check:versions` for version 1.0.89.
+- Passed the clean dependency install, dependency layout checks, release scope inventory, and whitespace check.
+- Passed the desktop TypeScript check, ESLint, 42 frontend tests, and production build.
+- Passed 25 Rust desktop tests.
+- Passed the Platform web TypeScript check, ESLint, shared Framework build, and production build.
+- Built and validated the local WiX MSI, setup EXE, updater signature, manifest, and checksums.
+- Confirmed that no Authenticode certificate is configured. Windows can still show an Unknown publisher or SmartScreen warning.
+- Did not run an installed-app update from version 1.0.88 because version 1.0.89 was not published during local verification.
 
 ## v-1.0.88
 

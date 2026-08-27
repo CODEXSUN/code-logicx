@@ -102,7 +102,9 @@ export function UpdateCenter({
           </button>
         </footer>
         <small className="update-policy">
-          Installation starts only after approval. Windows may request administrator permission.
+          Installation starts only after approval. The signed installer replaces the current app
+          version and keeps your settings and workspace data. Windows may request administrator
+          permission.
         </small>
       </section>
     </div>
