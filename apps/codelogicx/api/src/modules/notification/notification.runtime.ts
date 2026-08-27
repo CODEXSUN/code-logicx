@@ -51,14 +51,22 @@ class NotificationRuntime {
 
   async start() {
     if (this.options.redisUrl) {
-      const connection = redisConnection(this.options.redisUrl);
-      this.queue = new Queue("codelogicx-notifications", { connection });
-      await this.queue.waitUntilReady();
-      this.worker = new Worker(
-        "codelogicx-notifications",
-        (job) => this.process(String(job.data.jobId), "bullmq-redis"),
-        { connection }
-      );
+      try {
+        const connection = redisConnection(this.options.redisUrl);
+        this.queue = new Queue("codelogicx-notifications", { connection });
+        this.queue.on("error", (error) => console.error(`[queue.redis.error] ${error.message}`));
+        await withDeadline(this.queue.waitUntilReady(), 5_000, "Redis queue readiness timed out.");
+        this.worker = new Worker(
+          "codelogicx-notifications",
+          (job) => this.process(String(job.data.jobId), "bullmq-redis"),
+          { connection }
+        );
+        this.worker.on("error", (error) => console.error(`[worker.redis.error] ${error.message}`));
+      } catch (error) {
+        console.warn(`[queue.redis.fallback] ${errorMessage(error)}`);
+        await this.queue?.disconnect().catch(() => undefined);
+        this.queue = null;
+      }
     }
     this.timer = setInterval(() => {
       void this.drain();
@@ -68,22 +76,26 @@ class NotificationRuntime {
 
   async enqueue(jobIds: string[]) {
     if (this.queue) {
-      await Promise.all(
-        jobIds.map((jobId) =>
-          this.queue!.add(
-            "notification.deliver",
-            { jobId },
-            {
-              attempts: 5,
-              backoff: { delay: 1000, type: "exponential" },
-              jobId,
-              removeOnComplete: 500,
-              removeOnFail: false
-            }
+      try {
+        await Promise.all(
+          jobIds.map((jobId) =>
+            this.queue!.add(
+              "notification.deliver",
+              { jobId },
+              {
+                attempts: 5,
+                backoff: { delay: 1000, type: "exponential" },
+                jobId,
+                removeOnComplete: 500,
+                removeOnFail: false
+              }
+            )
           )
-        )
-      );
-      return;
+        );
+        return;
+      } catch (error) {
+        console.warn(`[queue.redis.fallback] ${errorMessage(error)}`);
+      }
     }
     await Promise.all(jobIds.map((jobId) => this.process(jobId, "database")));
   }
@@ -156,13 +168,34 @@ function emit(event: NotificationEvent) {
 function redisConnection(redisUrl: string) {
   const url = new URL(redisUrl);
   return {
+    connectTimeout: 5_000,
     db: url.pathname && url.pathname !== "/" ? Number(url.pathname.slice(1)) : 0,
     host: url.hostname,
     maxRetriesPerRequest: null,
     password: url.password ? decodeURIComponent(url.password) : undefined,
     port: url.port ? Number(url.port) : 6379,
+    retryStrategy: limitedRedisRetry,
+    tls: url.protocol === "rediss:" ? {} : undefined,
     username: url.username ? decodeURIComponent(url.username) : undefined
   };
+}
+
+function limitedRedisRetry(attempt: number) {
+  return attempt <= 3 ? Math.min(attempt * 250, 1_000) : null;
+}
+
+async function withDeadline<T>(promise: Promise<T>, milliseconds: number, message: string) {
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), milliseconds);
+      })
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 function errorMessage(error: unknown) {

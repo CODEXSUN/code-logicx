@@ -89,8 +89,7 @@ button { font: inherit; }
 .idea-create-page form > footer button:disabled { opacity: .6; }
 .todos-page { align-content: start; gap: 12px; padding-top: 14px; }
 .todos-page > header { align-items: center; }
-.todos-page > header p { margin-bottom: 3px; font-size: 9px; }
-.todos-page > header h1 { font-size: 27px; }
+.todos-page > header h1 { font-size: 24px; }
 .todos-page > header span { padding-top: 5px; font-size: 12px; }
 .todos-page > header button { min-height: 38px; padding: 0 13px; border-radius: 11px; font-size: 12px; }
 .todo-list { gap: 8px; }
@@ -108,6 +107,47 @@ button { font: inherit; }
 .messenger-page > header h1 { font-size: 24px; }
 .messenger-page > header span { padding-top: 5px; font-size: 12px; }
 .messenger-page > header button { width: 40px; min-height: 40px; padding: 0; }
+.ideas-page { align-content: start; gap: 12px; padding-top: 14px; }
+.ideas-page > header { align-items: center; }
+.ideas-page > header h1 { font-size: 24px; }
+.ideas-page > header span { padding-top: 5px; font-size: 12px; }
+.ideas-page > header button { min-height: 38px; padding: 0 13px; border-radius: 11px; font-size: 12px; }
+.projects-page { align-content: start; gap: 12px; padding-top: 14px; }
+.projects-page > header { align-items: center; }
+.projects-page > header h1 { font-size: 24px; }
+.projects-page > header span { padding-top: 5px; font-size: 12px; }
+.project-mobile-card { display: grid; gap: 13px; padding: 13px; border: 1px solid var(--line); border-radius: 15px; background: white; box-shadow: 0 4px 15px rgba(15,23,42,.045); }
+.project-mobile-card > header { display: grid; grid-template-columns: 38px minmax(0,1fr) 44px; align-items: center; gap: 10px; padding: 7px; border-radius: 11px; background: linear-gradient(180deg,#edf3f7,rgba(244,248,248,.2)); }
+.project-mark { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 10px; background: white; font-size: 12px; font-weight: 800; }
+.project-mobile-card > header > strong { overflow: hidden; color: #526173; font-family: ui-monospace, monospace; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.project-progress { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: conic-gradient(#2684ff var(--progress),#e2e8f0 0); }
+.project-progress::before { grid-area: 1/1; width: 34px; height: 34px; border-radius: 50%; background: white; content: ""; }
+.project-progress span { z-index: 1; grid-area: 1/1; color: #334155; font-size: 9px; font-weight: 700; }
+.project-mobile-copy { display: grid; gap: 5px; }
+.project-mobile-copy h2 { margin: 0; font-size: 16px; line-height: 1.25; }
+.project-mobile-copy p { display: -webkit-box; margin: 0; overflow: hidden; color: var(--muted); font-size: 12px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.project-work-grid { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(112px,.95fr); overflow: hidden; border-radius: 11px; background: #f8fafb; }
+.project-recent { display: grid; grid-template-columns: 14px minmax(0,1fr); gap: 6px; padding: 10px; }
+.project-recent > ion-icon { margin-top: 2px; color: var(--muted); font-size: 13px; }
+.project-recent > div { display: grid; align-content: start; }
+.project-recent span { display: grid; gap: 2px; min-width: 0; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.project-recent span:last-child { border-bottom: 0; }
+.project-recent strong, .project-recent small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-recent strong { font-size: 10px; font-weight: 650; }
+.project-recent small { color: var(--muted); font-size: 8px; }
+.project-metrics { display: grid; align-content: center; gap: 9px; padding: 10px; border-left: 1px solid var(--line); background: rgba(255,255,255,.45); }
+.project-metrics > div { display: grid; gap: 4px; }
+.project-metrics span { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.project-metrics small { color: var(--muted); font-size: 9px; }
+.project-metrics b { color: #64748b; font-size: 10px; }
+.project-metrics i { display: block; height: 5px; overflow: hidden; border-radius: 99px; background: #e2e8f0; }
+.project-metrics em { display: block; height: 100%; border-radius: inherit; background: #10b981; }
+.project-metrics > div:first-child em { background: #fbbf24; }
+.project-mobile-card > footer { display: flex; align-items: flex-end; gap: 7px; }
+.project-mobile-card > footer > div { display: grid; flex: 1; min-width: 0; gap: 5px; }
+.project-mobile-card > footer b { width: fit-content; padding: 4px 7px; border-radius: 99px; background: #e8f1ff; color: #2563eb; font-size: 9px; font-weight: 650; }
+.project-mobile-card > footer small { overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.project-mobile-card > footer button { display: grid; flex-shrink: 0; place-items: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 9px; background: white; color: #475569; }
 .record-form-page { display: grid; align-content: start; gap: 20px; width: 100%; max-width: 680px; min-height: 100%; padding: 18px 16px 100px; margin: 0 auto; }
 .record-form-page > header, .messenger-thread > header { display: flex; align-items: center; gap: 12px; }
 .record-form-page > header > button, .messenger-thread > header > button { display: grid; flex-shrink: 0; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 13px; background: white; color: #475569; }
@@ -128,22 +168,24 @@ button { font: inherit; }
 .messenger-row small, .contact-list small { overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .messenger-row > b { display: grid; place-items: center; min-width: 22px; height: 22px; border-radius: 99px; background: var(--brand); color: white; font-size: 10px; }
 .contact-list { display: grid; gap: 10px; }
-.messenger-thread { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; padding: 14px 14px 90px; }
+.messenger-thread { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; min-height: 0; padding: 14px; overflow: hidden; }
 .messenger-thread > header { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .messenger-thread > header > div { display: grid; gap: 2px; }
 .messenger-thread > header small { color: var(--muted); font-size: 11px; }
 .thread-messages { display: flex; flex-direction: column; gap: 9px; padding: 14px 2px; overflow-y: auto; }
 .thread-messages > div { align-self: flex-start; max-width: 86%; padding: 9px 11px; border-radius: 12px 12px 12px 3px; background: white; border: 1px solid var(--line); }
+.thread-messages > div.is-outgoing { align-self: flex-end; border-radius: 12px 12px 3px 12px; background: #e1f2ef; border-color: #c9e3df; }
 .thread-messages strong { color: var(--brand); font-size: 10px; }
 .thread-messages p { margin: 3px 0 0; color: #334155; font-size: 13px; line-height: 1.45; }
-.messenger-thread > form { display: grid; grid-template-columns: 1fr 46px; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+.thread-messages time { display: block; padding-top: 4px; color: var(--muted); font-size: 10px; line-height: 1; text-align: right; }
+.messenger-thread > form { position: sticky; z-index: 1; bottom: 0; display: grid; grid-template-columns: 1fr 46px; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line); background: var(--surface); }
 .messenger-thread > form input { min-width: 0; min-height: 46px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; outline: none; }
 .messenger-thread > form button { border: 0; border-radius: 12px; background: var(--brand); color: white; }
 .empty-card, .loading-page { display: grid; place-items: center; color: var(--muted); }
 .empty-card { min-height: 140px; padding: 20px; }
 .loading-page { align-content: center; gap: 12px; height: 100%; padding: 30px; text-align: center; }
 .loading-page strong { color: var(--ink); font-size: 18px; }
-.mobile-tabs { z-index: 2; display: grid; grid-template-columns: repeat(4, 1fr); padding: 7px 12px calc(7px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(255,255,255,.97); }
+.mobile-tabs { z-index: 2; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 7px 8px calc(7px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(255,255,255,.97); }
 .mobile-tabs button { display: grid; justify-items: center; gap: 4px; min-width: 0; min-height: 50px; padding: 6px 2px; border: 0; border-radius: 13px; background: transparent; color: #7c8798; }
 .mobile-tabs button.is-active { background: #e5f2f0; color: var(--brand); }
 .mobile-tabs ion-icon { font-size: 21px; }
@@ -163,6 +205,13 @@ button { font: inherit; }
 .mobile-drawer .drawer-chevron { justify-self: end; font-size: 12px; opacity: .35; }
 .mobile-drawer footer { display: grid; gap: 4px; padding-top: 12px; border-top: 1px solid var(--line); }
 .mobile-drawer footer button { grid-template-columns: 30px 1fr; }
+.drawer-account { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; align-items: center; gap: 10px; padding: 4px 10px 10px; }
+.drawer-account-avatar { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: #e1f2ef; color: var(--brand); font-size: 12px; font-weight: 800; }
+.drawer-account > span:nth-child(2) { display: grid; min-width: 0; gap: 2px; }
+.drawer-account strong, .drawer-account small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-account strong { color: var(--ink); font-size: 12px; }
+.drawer-account small { color: var(--muted); font-size: 9px; }
+.drawer-account > b { padding: 4px 6px; border: 1px solid #cde2df; border-radius: 99px; background: #eff8f6; color: var(--brand); font-size: 8px; font-weight: 750; white-space: nowrap; }
 .drawer-submenu { display: grid; gap: 5px; padding: 5px 4px 10px 22px; border-left: 2px solid #dbe8e7; }
 .mobile-drawer nav .drawer-setting-row { display: flex; min-height: 50px; padding: 4px 8px 4px 18px; }
 .mobile-drawer nav .drawer-setting-row > span { display: grid; gap: 2px; }

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
 import { listConversations, listMessages, listMessagingContacts } from "./messaging.services";
+import { socketEndpoint } from "../../shared/api/socket-endpoint";
 
 export const conversationsKey = ["messaging", "conversations"] as const;
 export function useConversations() { return useQuery({ queryKey: conversationsKey, queryFn: listConversations }); }
@@ -13,7 +14,7 @@ export function useMessagingSocket() {
   useEffect(() => {
     const token = window.localStorage.getItem("codelogicx_session");
     if (!token) return;
-    const socket = io(import.meta.env.VITE_PLATFORM_API_URL.replace(/\/+$/u, ""), {
+    const socket = io(socketEndpoint(), {
       auth: { token }, path: "/api/codelogicx/messaging/socket.io", transports: ["websocket", "polling"]
     });
     socket.on("message.created", (message: { conversationId: string }) => {

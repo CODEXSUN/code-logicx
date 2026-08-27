@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
 import { listNotifications, markNotificationRead } from "./notification.services";
+import { socketEndpoint } from "../../shared/api/socket-endpoint";
 
 const queryKey = ["codelogicx", "notifications"] as const;
 
@@ -16,8 +17,7 @@ export function useNotificationCenter() {
   useEffect(() => {
     const token = window.localStorage.getItem("codelogicx_session");
     if (!token) return;
-    const apiUrl = import.meta.env.VITE_PLATFORM_API_URL.replace(/\/+$/u, "");
-    const socket = io(apiUrl, {
+    const socket = io(socketEndpoint(), {
       auth: { token },
       path: "/api/codelogicx/notifications/socket.io",
       transports: ["websocket", "polling"]

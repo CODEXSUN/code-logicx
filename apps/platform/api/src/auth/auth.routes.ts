@@ -182,7 +182,8 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         name: payload.name,
         permissions: payload.permissions ?? [],
         role: payload.role,
-        sessionIssuedAt: payload.sessionIssuedAt
+        sessionIssuedAt: payload.sessionIssuedAt,
+        userId: payload.userId
       },
       { requestId: request.id }
     );

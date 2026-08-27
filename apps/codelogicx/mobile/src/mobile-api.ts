@@ -1,4 +1,5 @@
-import type { Contact, Conversation, ConversationMessage, Idea, IdeaInput, MobileData, Project, Todo, TodoInput } from "./mobile-types";
+import type { Contact, Conversation, ConversationMessage, Idea, IdeaInput, MobileData, ProjectRecord, Session, Todo, TodoInput } from "./mobile-types";
+import { io } from "socket.io-client";
 
 type Envelope<T> = { data: T; success: true } | { error: { message: string }; success: false };
 const tokenKey = "codelogicx_mobile_session";
@@ -37,7 +38,7 @@ export class MobileApi {
 
   async loadData(): Promise<MobileData> {
     const results = await Promise.allSettled([
-      this.codelogic<Idea[]>("/ideas"), this.codelogic<Project[]>("/admin/project-manager/project"),
+      this.codelogic<Idea[]>("/ideas"), this.codelogic<{ records: Record<string, ProjectRecord[]> }>("/admin/project-manager/result"),
       this.codelogic<Todo[]>("/task-manager/todos"), this.codelogic<Conversation[]>("/messaging/conversations")
     ]);
     const value = <T,>(index: number) => results[index]?.status === "fulfilled" ? results[index].value as T : [] as T;
@@ -45,8 +46,12 @@ export class MobileApi {
     if (results.every((result) => result.status === "rejected") && firstFailure?.status === "rejected") {
       throw firstFailure.reason;
     }
-    return { ideas: value<Idea[]>(0), projects: value<Project[]>(1), todos: value<Todo[]>(2), conversations: value<Conversation[]>(3) };
+    const projectResult = value<{ records: Record<string, ProjectRecord[]> }>(1);
+    const projectRecords = Object.values(projectResult.records ?? {}).flat();
+    return { ideas: value<Idea[]>(0), projects: projectResult.records?.project ?? [], projectRecords, todos: value<Todo[]>(2), conversations: value<Conversation[]>(3) };
   }
+
+  getSession(): Promise<Session> { return this.request<Session>("/auth/session"); }
 
   createIdea(input: IdeaInput): Promise<Idea> {
     const categoryColors: Record<string, string> = { Design: "#db2777", Engineering: "#7c3aed", General: "#2563eb", Operations: "#ea580c", Product: "#0891b2", Research: "#4f46e5" };
@@ -67,6 +72,21 @@ export class MobileApi {
   listMessages(id: string): Promise<ConversationMessage[]> { return this.codelogic<ConversationMessage[]>(`/messaging/conversations/${id}/messages`); }
   createConversation(memberId: string): Promise<Conversation> { return this.codelogic<Conversation>("/messaging/conversations", { body: JSON.stringify({ memberIds: [memberId], type: "direct" }), method: "POST" }); }
   sendMessage(id: string, content: string): Promise<ConversationMessage> { return this.codelogic<ConversationMessage>(`/messaging/conversations/${id}/messages`, { body: JSON.stringify({ attachment: null, clientMessageId: crypto.randomUUID(), content, mentionIds: [] }), method: "POST" }); }
+
+  subscribeMessaging(refresh: () => void) {
+    const token = localStorage.getItem(tokenKey);
+    if (!token) return () => undefined;
+    const socket = io(mobileEndpoint(), {
+      auth: { token },
+      path: "/api/codelogicx/messaging/socket.io",
+      transports: ["websocket", "polling"]
+    });
+    socket.on("message.created", refresh);
+    socket.on("conversation.read", refresh);
+    return () => {
+      socket.close();
+    };
+  }
 
   private codelogic<T>(path: string, options: RequestInit = {}) { return this.request<T>(`/api/codelogicx${path}`, options); }
 

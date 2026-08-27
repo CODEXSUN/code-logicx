@@ -26,6 +26,69 @@ docker exec codelogicx-api sh -lc 'test -w "$CODELOGICX_AGENT_ALLOWED_ROOTS"'
 Do not run the API as root, apply recursive `chmod 777`, bake secrets into the image, or mount Git
 metadata without its matching checkout.
 
+## Redis, BullMQ, WebSocket, and mobile
+
+CodeLogicX does not create Redis in its Docker Compose file. Connect the API to the existing Redis
+service on the VPS. MariaDB remains the notification queue authority when Redis is unavailable.
+
+Use one of these private connection paths:
+
+1. Connect the Redis container and CodeLogicX to the same Docker network.
+2. Use the Redis service name in `REDIS_URL`, such as `redis://user:password@redis:6379/0`.
+3. If Redis runs on the VPS host, use `host.docker.internal` as the host name.
+
+The API Compose service maps `host.docker.internal` to the Linux host gateway. Do not use
+`127.0.0.1` for a host Redis service from inside the API container.
+
+Set the URL in `/home/codelogicx/.env`:
+
+```dotenv
+REDIS_URL=redis://codelogicx:replace-with-password@host.docker.internal:6379/0
+```
+
+Use `rediss://` when Redis requires TLS. Encode special characters in the user name and password.
+Keep Redis on a private network. Require an ACL user and password. Do not expose port 6379 to the
+public internet. Use Redis 6.2 or later for BullMQ compatibility.
+
+Redis has two jobs in CodeLogicX:
+
+- BullMQ accelerates notification delivery. MariaDB stores the durable notification and job state.
+- The Socket.IO Redis adapter sends Messenger and notification events across API containers.
+
+Nginx forwards WebSocket upgrade headers for `/api/codelogicx/`. Socket.IO uses HTTP polling when a
+WebSocket connection is unavailable. The normal REST API uses the same HTTPS origin and bearer
+token.
+
+The default Docker topology runs one API container. If you add more API containers, configure
+sticky sessions at the outer load balancer because Socket.IO polling requires them.
+
+Set the public origins in the production environment:
+
+```dotenv
+PLATFORM_API_URL=https://app.example.com
+PLATFORM_WEB_ORIGIN=https://app.example.com
+PLATFORM_WEB_ORIGINS=https://app.example.com
+VITE_PLATFORM_API_URL=/api/platform
+VITE_MOBILE_API_URL=https://app.example.com
+```
+
+Build the mobile application with the public HTTPS origin. A physical device cannot use the VPS
+loopback address. The mobile Messenger connects to the same Socket.IO path and keeps REST as its
+initial-load and send fallback.
+
+Run these checks after deployment:
+
+```sh
+docker compose --env-file .env --env-file .container/deploy.env -f .container/docker-compose.yml ps
+docker exec codelogicx-api node --input-type=module -e 'import Redis from "ioredis"; const client=new Redis(process.env.REDIS_URL); await client.ping().then(console.log); client.disconnect()'
+curl -fsS https://app.example.com/health
+curl -fsS 'https://app.example.com/api/codelogicx/messaging/socket.io/?EIO=4&transport=polling'
+docker logs codelogicx-api 2>&1 | grep -E 'socket.redis.ready|server.listen'
+```
+
+The Redis command must print `PONG`. The Socket.IO request must return an Engine.IO open packet.
+The API log must show one Redis channel for Messenger and one for notifications.
+
 ## Ubuntu production update watcher
 
 The production checkout stays at `/home/codelogicx`. A systemd timer checks `origin/main` every five

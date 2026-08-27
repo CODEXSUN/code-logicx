@@ -29,6 +29,7 @@ import { userRoleModule } from "./modules/user-role/index.js";
 import { userModule, userReferenceContract } from "./modules/user/index.js";
 import { registerCodeLogicXAddons } from "./addons/addon-host.js";
 import { closeFileManagerDatabase, fileManagerApiModuleKeys } from "./addons/file-manager-host.js";
+import { configureSocketRedis } from "./realtime/socket-redis.js";
 
 const modules = [userModule, roleModule, permissionModule, userRoleModule, rolePermissionModule];
 
@@ -58,8 +59,8 @@ export async function createApp() {
     shutdownHooks: [closeNotifications, closeFileManagerDatabase, closePlatformDatabase],
     tenantContext: false
   });
-  registerNotificationSocket(app);
-  registerMessagingSocket(app);
+  await registerNotificationSocket(app);
+  await registerMessagingSocket(app);
   const healthChecks: HealthCheck[] = [
     {
       name: "codelogicx-api",
@@ -160,11 +161,16 @@ function isIdeaImageRequest(request: { method: string; url: string }) {
   );
 }
 
-function registerNotificationSocket(app: Awaited<ReturnType<typeof createApiApp>>) {
+async function registerNotificationSocket(app: Awaited<ReturnType<typeof createApiApp>>) {
   const io = new SocketServer(app.server, {
     cors: { credentials: true, origin: platformWebOrigins() },
     path: "/api/codelogicx/notifications/socket.io"
   });
+  const closeRedis = await configureSocketRedis(
+    io,
+    env.REDIS_URL,
+    "codelogicx:notifications:socket.io"
+  );
   io.use((socket, next) => {
     const authorization = String(
       socket.handshake.auth.token ?? socket.handshake.headers.authorization ?? ""
@@ -182,14 +188,20 @@ function registerNotificationSocket(app: Awaited<ReturnType<typeof createApiApp>
   app.addHook("onClose", async () => {
     unsubscribe();
     await io.close();
+    await closeRedis();
   });
 }
 
-function registerMessagingSocket(app: Awaited<ReturnType<typeof createApiApp>>) {
+async function registerMessagingSocket(app: Awaited<ReturnType<typeof createApiApp>>) {
   const io = new SocketServer(app.server, {
     cors: { credentials: true, origin: platformWebOrigins() },
     path: "/api/codelogicx/messaging/socket.io"
   });
+  const closeRedis = await configureSocketRedis(
+    io,
+    env.REDIS_URL,
+    "codelogicx:messaging:socket.io"
+  );
   io.use((socket, next) => {
     const authorization = String(
       socket.handshake.auth.token ?? socket.handshake.headers.authorization ?? ""
@@ -212,6 +224,7 @@ function registerMessagingSocket(app: Awaited<ReturnType<typeof createApiApp>>) 
   app.addHook("onClose", async () => {
     unsubscribe();
     await io.close();
+    await closeRedis();
   });
 }
 

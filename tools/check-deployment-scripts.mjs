@@ -10,6 +10,8 @@ const watcher = read(".container/update-watcher/codelogicx-update-watcher.sh");
 const watcherInstaller = read(".container/update-watcher/install.sh");
 const watcherService = read(".container/update-watcher/codelogicx-update-watcher.service");
 const watcherTimer = read(".container/update-watcher/codelogicx-update-watcher.timer");
+const nginx = read(".container/scripts/nginx-spa.conf");
+const containerReadme = read(".container/README.md");
 
 requireTokens("update.sh", updater, [
   "umask 077",
@@ -29,7 +31,23 @@ requireTokens(".container/setup.sh", setup, [
 requireTokens(".container/docker-compose.yml", compose, [
   "name: ${CODELOGICX_COMPOSE_PROJECT:-codelogicx}",
   "CODELOGICX_ENV_FILE_PATH: /workspace/codelogicx/.env",
-  "networks: [codelogicx]"
+  "networks: [codelogicx]",
+  "host.docker.internal:host-gateway"
+]);
+requireTokens(".container/scripts/nginx-spa.conf", nginx, [
+  'proxy_set_header Upgrade $http_upgrade;',
+  'proxy_set_header Connection "upgrade";',
+  "proxy_read_timeout 75s;"
+]);
+requireTokens(".container/README.md", containerReadme, [
+  "## Existing Redis service",
+  "## BullMQ behavior",
+  "## WebSocket and Socket.IO",
+  "## Normal REST API",
+  "## Mobile application",
+  "host.docker.internal",
+  "REDIS_URL=redis://",
+  "VITE_MOBILE_API_URL=https://app.example.com"
 ]);
 requireTokens(".container/deploy.env.example", deployExample, [
   "CODELOGICX_VERSION=",

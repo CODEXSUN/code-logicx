@@ -58,6 +58,8 @@ services:
         condition: service_healthy
     ports:
       - "${CODELOGICX_BIND_ADDRESS:-127.0.0.1}:${CODELOGICX_API_HOST_PORT:-9150}:${CODELOGICX_API_INTERNAL_PORT:-9150}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ${CODELOGICX_RUNTIME_ENV_FILE:-../.env}:/workspace/codelogicx/.env:rw
       - codex-state:/var/lib/codelogicx/codex

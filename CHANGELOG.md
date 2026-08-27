@@ -5,6 +5,48 @@ All notable changes to **logicx_code** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.89] - 2026-08-27
+
+### Added
+
+- Added an Android update monitor to the CodeLogicX mobile application.
+- Added update checks after application startup and when the application returns
+  to the foreground.
+- Added a cloud update manifest at
+  `apps/platform/web/public/mobile/codelogicx-update.json`.
+- Added a native Capacitor updater that downloads an APK over HTTPS and opens
+  the Android installation confirmation screen.
+
+### Security
+
+- The updater checks the application ID, version, version code and SHA-256 hash
+  before it opens the APK installer.
+- The updater rejects non-HTTPS APK URLs.
+- Android keeps the existing application data during an in-place update.
+
+### Changed
+
+- Updated the Android application to version `1.0.89` with version code `10089`.
+- Added the Android permission that allows the application to request package
+  installation.
+- Aligned messages from the authenticated mobile user on the right side of the
+  conversation. Messages from other participants remain on the left side.
+- Added a compact timestamp to each mobile message bubble.
+
+### Verification
+
+- Built the debug APK successfully with Capacitor and Gradle.
+- Installed the APK as an in-place update on emulator `emulator-5554`.
+- Verified version `1.0.89`, version code `10089` and native updater
+  registration after startup.
+
+### Notes
+
+- Android shows a system confirmation before it installs an update. Silent
+  installation requires a managed device-owner environment.
+- Production updates must use the same application ID and signing certificate
+  as the installed application.
+
 ## [1.0.2] - 2026-08-26
 
 ### Added
