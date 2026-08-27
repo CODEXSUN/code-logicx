@@ -72,7 +72,7 @@ export function ProjectManagerWorkspace() {
   return (
     <WorkspacePage
       title="Project Manager"
-      description="JSON-backed project workbench for issues, tasks, reviews, kanban, releases, activity, and discussions."
+      description="JSON-backed project workbench for modules, tasks, reviews, kanban, releases, actions, and discussions."
       technicalName="page.project-manager"
       actions={
         <div className="flex flex-wrap justify-end gap-2">

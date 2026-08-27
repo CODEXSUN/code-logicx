@@ -39,6 +39,7 @@ export { WorkspaceSelect } from "./select";
 export type { WorkspaceSelectOption } from "./select";
 export { WorkspaceDatePicker } from "./date-picker";
 export { WorkspaceEditor } from "./editor";
+export type { WorkspaceMentionItem } from "./editor";
 export { WorkspaceMinimalEditor } from "./minimal-editor";
 export { WorkspaceAnimatedTabs } from "./animated-tabs";
 export type { WorkspaceAnimatedTab } from "./animated-tabs";

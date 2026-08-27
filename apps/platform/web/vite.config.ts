@@ -161,6 +161,18 @@ export default defineConfig(({ command, mode }) => {
               ]
             },
             proxy: {
+              "/api/platform/blogs": {
+                changeOrigin: false,
+                target: platformApiTarget(runtimeEnv)
+              },
+              "/api/platform/file-manager": {
+                changeOrigin: false,
+                target: platformApiTarget(runtimeEnv)
+              },
+              "/api/platform/public": {
+                changeOrigin: false,
+                target: platformApiTarget(runtimeEnv)
+              },
               "/api/platform": {
                 changeOrigin: false,
                 rewrite: (path) => path.replace(/^\/api\/platform/u, "") || "/",

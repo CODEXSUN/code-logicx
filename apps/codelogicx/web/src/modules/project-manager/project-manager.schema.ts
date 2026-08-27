@@ -15,7 +15,7 @@ export const projectManagerKinds: Array<{
   { kind: "kanban", label: "Kanban" },
   { kind: "todo", label: "Todos" },
   { kind: "timeline", label: "Timeline" },
-  { kind: "activity", label: "Activity" },
+  { kind: "activity", label: "Action" },
   { kind: "discussion", label: "Discussions" },
   { kind: "release", label: "Releases" }
 ];

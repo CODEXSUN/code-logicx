@@ -74,7 +74,7 @@ function RoadmapCatalog({
         <header className="border-b pb-6">
           <h1 className="text-3xl font-semibold tracking-tight">Roadmaps</h1>
           <p className="pt-2 text-base text-muted-foreground">
-            Every project initiative roadmap. Open a card to inspect its hierarchy, reviews, Kanban,
+            Every project module roadmap. Open a card to inspect its hierarchy, reviews, Kanban,
             Gantt, and delivery statistics.
           </p>
         </header>
@@ -83,7 +83,7 @@ function RoadmapCatalog({
         ) : null}
         {!loading && !groups.length ? (
           <p className="py-12 text-sm text-muted-foreground">
-            No initiative roadmaps are available.
+            No module roadmaps are available.
           </p>
         ) : null}
         {groups.map((group) => (

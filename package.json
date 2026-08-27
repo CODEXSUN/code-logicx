@@ -1,6 +1,6 @@
 {
   "name": "code-logicx",
-  "version": "1.0.0",
+  "version": "1.0.87",
   "private": true,
   "packageManager": "npm@12.0.1",
   "description": "CodeLogicX developer and engineering orchestration workspace",
@@ -14,6 +14,14 @@
     "desktop:dev": "node tools/start-desktop-dev.mjs",
     "desktop:build": "npm run tauri:build --workspace @codelogicx/desktop",
     "desktop:check": "npm run check --workspace @codelogicx/desktop",
+    "desktop:release:build": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-desktop-release.ps1",
+    "desktop:release:publish": "node tools/publish-desktop-release.mjs",
+    "desktop:release:check": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/check-desktop-release.ps1",
+    "mobile:dev": "npm run dev --workspace @codelogicx/mobile",
+    "mobile:build": "npm run build --workspace @codelogicx/mobile",
+    "mobile:sync": "npm run sync --workspace @codelogicx/mobile",
+    "mobile:apk:debug": "npm run apk:debug --workspace @codelogicx/mobile",
+    "mobile:open:android": "npm run open:android --workspace @codelogicx/mobile",
     "dev:api": "node tools/preflight.mjs platform-api",
     "dev:web": "node tools/preflight.mjs platform-web",
     "dev:restart": "node tools/dev-stack.mjs",
@@ -42,6 +50,10 @@
     "db:migrate": "tsx apps/platform/api/src/database/db-cli.ts migrate",
     "db:migrations:list": "tsx apps/platform/api/src/database/db-cli.ts migrations:list",
     "db:seed": "tsx apps/platform/api/src/database/db-cli.ts seed",
+    "version:show": "node tools/repository-release.mjs version:show",
+    "version:bump": "node tools/repository-release.mjs version:bump",
+    "check:versions": "node tools/repository-release.mjs check:versions",
+    "github:now": "node tools/github-helper.mjs",
     "env:jwt-secret": "node tools/env-jwt-secret.mjs"
   },
   "devDependencies": {
@@ -79,5 +91,27 @@
     "bullmq": false,
     "esbuild": true,
     "msgpackr-extract": false
+  },
+  "dependencies": {
+    "@codexsun/blog": "1.0.16",
+    "@codexsun/file-manager": "1.1.5",
+    "@tiptap/core": "3.30.2",
+    "@tiptap/extension-highlight": "3.30.2",
+    "@tiptap/extension-image": "3.30.2",
+    "@tiptap/extension-link": "3.30.2",
+    "@tiptap/extension-mention": "3.30.2",
+    "@tiptap/extension-placeholder": "3.30.2",
+    "@tiptap/extension-subscript": "3.30.2",
+    "@tiptap/extension-superscript": "3.30.2",
+    "@tiptap/extension-task-item": "3.30.2",
+    "@tiptap/extension-task-list": "3.30.2",
+    "@tiptap/extension-text-align": "3.30.2",
+    "@tiptap/extension-text-style": "3.30.2",
+    "@tiptap/extension-underline": "3.30.2",
+    "@tiptap/markdown": "3.30.2",
+    "@tiptap/pm": "3.30.2",
+    "@tiptap/react": "3.30.2",
+    "@tiptap/starter-kit": "3.30.2",
+    "@tiptap/suggestion": "3.30.2"
   }
 }

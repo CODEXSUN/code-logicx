@@ -9,6 +9,7 @@ import type { ResourceState } from "./use-desktop-session";
 
 export type Activity =
   | "assist"
+  | "cloud"
   | "docker"
   | "files"
   | "git"
@@ -113,7 +114,9 @@ function PanelProgress({ label }: { label: string }) {
 function EmptyPanel({ activity }: { activity: Activity }) {
   const descriptions: Record<Activity, string> = {
     assist: "Connect Assist to plan, edit, review, and verify this workspace.",
-    compass: "Run standalone sales and CRM workflow prototypes without connecting to CodeLogicX tasks.",
+    cloud: "Connect this desktop to CodeLogicX Cloud.",
+    compass:
+      "Run standalone sales and CRM workflow prototypes without connecting to CodeLogicX tasks.",
     docker: "Inspect services and run approved Docker operations.",
     files: "Open a workspace to browse files.",
     git: "Open a Git repository to review changes.",

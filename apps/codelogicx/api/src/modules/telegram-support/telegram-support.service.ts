@@ -1,16 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { AppError } from "@codelogicx/framework/errors";
-import { TaskManagerService } from "../task-manager/task-manager.service.js";
 import { TelegramSupportRepository } from "./telegram-support.repository.js";
 import { telegramMtprotoService } from "./telegram-mtproto.service.js";
 
-const scopeKey = "super-admin";
-
 export class TelegramSupportService {
-  constructor(
-    private readonly repository = new TelegramSupportRepository(),
-    private readonly tasks = new TaskManagerService()
-  ) {}
+  constructor(private readonly repository = new TelegramSupportRepository()) {}
 
   async status() {
     return telegramMtprotoService.status();
@@ -47,24 +41,15 @@ export class TelegramSupportService {
   }
 
   private async command(message: NonNullable<TelegramUpdate["message"]>) {
-    const [command, argument = ""] = message.text.trim().split(/\s+/u);
+    const [command = "", argument = ""] = message.text.trim().split(/\s+/u);
     if (command === "/start" && argument) {
       const connected = await this.repository.connect(argument, String(message.chat.id), message.from?.username ?? "", [message.from?.first_name, message.from?.last_name].filter(Boolean).join(" "));
       return connected ? "Connected to CodeLogicX. You can now control tasks and receive notifications here." : "This connection link is invalid or already used.";
     }
-    if (command === "/starttask" || command === "/stoptask") {
-      const connection = await this.connected();
-      if (connection.chat_id !== String(message.chat.id)) return "This Telegram account is not connected.";
-      if (!argument) return `Usage: ${command} <task-id>`;
-      const status = command === "/starttask" ? "in-progress" : "open";
-      const task = await this.tasks.status(scopeKey, argument, status, "telegram-support");
-      return `${command === "/starttask" ? "Started" : "Stopped"}: ${task.title} (${task.id})`;
+    if (["/tasks", "/starttask", "/stoptask"].includes(command)) {
+      return "Todos are private and are available only inside your CodeLogicX account.";
     }
-    if (command === "/tasks") {
-      const tasks = (await this.tasks.list(scopeKey)).filter((task) => task.status !== "completed").slice(0, 10);
-      return tasks.length ? tasks.map((task) => `${task.id} · ${task.status} · ${task.title}`).join("\n") : "No active tasks.";
-    }
-    if (command === "/help") return "Commands: /tasks, /starttask <id>, /stoptask <id>, /help";
+    if (command === "/help") return "Commands: /help";
     return null;
   }
 

@@ -66,6 +66,22 @@ Add these GitHub Actions secrets before the first release:
 2. Add `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` with the key password.
 3. Add an Authenticode certificate to the Windows signing process before public distribution.
 
+For a local Authenticode build, set one of these options before the release command:
+
+```powershell
+$env:CODELOGICX_WINDOWS_CERTIFICATE_THUMBPRINT = "<certificate thumbprint>"
+```
+
+Or load a PFX certificate for this build only:
+
+```powershell
+$env:CODELOGICX_WINDOWS_CERTIFICATE_PATH = "C:\secure\codelogicx-code-signing.pfx"
+$env:CODELOGICX_WINDOWS_CERTIFICATE_PASSWORD = "<certificate password>"
+```
+
+The certificate must include the Code Signing enhanced key usage and a private key. The build
+removes an imported PFX certificate from the current-user certificate store after completion.
+
 The updater signature proves that the update belongs to this app. Authenticode signing separately
 reduces Windows SmartScreen warnings.
 

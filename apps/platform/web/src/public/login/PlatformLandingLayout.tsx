@@ -83,7 +83,7 @@ function Logo() {
 }
 
 const messages = [
-  "Plan projects and connect issues, tasks, activities, and reviews.",
+  "Plan projects and connect modules, tasks, actions, and reviews.",
   "Capture reusable whiteboards and link them to delivery records.",
   "Track repositories, platform modules, and daily development priorities."
 ];

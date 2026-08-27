@@ -36,7 +36,9 @@ export async function registerHoneyRoutes(app: FastifyInstance) {
   );
   app.get("/honey/conversations/:uuid", async (request) => {
     const { uuid } = z.object({ uuid: z.string().length(16) }).parse(request.params);
-    return ok(await service.conversation(uuid, requireCodeLogicXActor().id), { requestId: request.id });
+    return ok(await service.conversation(uuid, requireCodeLogicXActor().id), {
+      requestId: request.id
+    });
   });
   app.put("/honey/conversations/:uuid/archive", async (request) => {
     const { uuid } = z.object({ uuid: z.string().length(16) }).parse(request.params);
@@ -45,7 +47,7 @@ export async function registerHoneyRoutes(app: FastifyInstance) {
     });
   });
   app.post("/honey/chat", async (request) =>
-    ok(await service.chat(chatSchema.parse(request.body), requireCodeLogicXActor().id), {
+    ok(await service.chat(chatSchema.parse(request.body), requireCodeLogicXActor()), {
       requestId: request.id
     })
   );

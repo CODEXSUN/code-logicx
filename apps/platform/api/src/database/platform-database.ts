@@ -17,20 +17,24 @@ import { migrateRolePermissionModule } from "../modules/role-permission/role-per
 import { seedRolePermissionModule } from "../modules/role-permission/role-permission.seed.js";
 import { assertDatabaseName, quoteIdentifier } from "./database-utils.js";
 import type { PlatformDatabase } from "./schema.js";
+import {
+  addonMigrationOrder,
+  migrateCodeLogicXAddonDatabases
+} from "../addons/addon-database.js";
+import type { BlogsDatabase } from "@codexsun/blog/api";
 
 let database: Kysely<PlatformDatabase> | null = null;
 let bootstrapped = false;
 
-export const codelogicxMigrationOrder = Object.freeze([
+export const platformDatabaseLifecycleOrder = Object.freeze([
   "identity.role",
   "identity.permission",
   "identity.user",
   "identity.user-role",
   "identity.role-permission",
-  "codelogicx.project-manager.sql.v4",
-  "codelogicx.task-manager.sql.v2",
-  "codelogicx.planning.sql.v2",
-  "codelogicx.sync.sql.v1"
+  "@codelogicx/codelogicx",
+  ...addonMigrationOrder,
+  "platform.seeders"
 ]);
 
 export const codelogicxSeedOrder = Object.freeze([
@@ -121,6 +125,15 @@ export async function migratePlatformDatabase() {
   await migrateUserRoleModule(db);
   await migrateRolePermissionModule(db);
   await migrateCodeLogicXDatabase(db as unknown as Kysely<CodeLogicXDatabase>);
+  await sql`
+    UPDATE schema_migrations SET package_id='@codelogicx/platform'
+    WHERE package_id='legacy' AND name LIKE 'identity.%'
+  `.execute(db);
+  await sql`
+    UPDATE schema_migrations SET package_id='@codexsun/blog:legacy'
+    WHERE package_id='legacy' AND name LIKE 'blogs:%'
+  `.execute(db);
+  await migrateCodeLogicXAddonDatabases(db as unknown as Kysely<BlogsDatabase>);
 }
 
 export async function seedPlatformDatabase() {

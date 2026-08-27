@@ -45,7 +45,7 @@ export function WorkOverviewWorkspace() {
     summary("Projects", activeProjects.length, "active projects", "/app/codelogicx/projects"),
     summary("Tasks", activeTodos.length, statusContext(activeTodos), "/app/codelogicx/tasks"),
     summary("Issues", activeIssues.length, priorityContext(activeIssues), "/app/codelogicx/issues"),
-    summary("Roadmap", activeIssues.length, "initiatives being planned", "/app/codelogicx/roadmap"),
+    summary("Roadmap", activeIssues.length, "modules being planned", "/app/codelogicx/roadmap"),
     summary("Sprints", activeSprints.length, sprintContext(activeSprints), "/app/codelogicx/sprints"),
     summary(
       "Releases",
@@ -63,7 +63,7 @@ export function WorkOverviewWorkspace() {
             Everything happening across your engineering work.
           </h1>
           <p className="max-w-2xl pt-2 text-base leading-7 text-muted-foreground">
-            Live projects, tasks, initiatives, and releases from the CodeLogicX workspace.
+            Live projects, tasks, modules, and releases from the CodeLogicX workspace.
           </p>
           <nav aria-label="Work sections" className="flex flex-wrap gap-2 pt-6">
             {destinations.map((item) => (

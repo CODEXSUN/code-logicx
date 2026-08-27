@@ -8,6 +8,7 @@ import {
   seedPlatformDatabase,
   platformDatabaseName
 } from "./platform-database.js";
+import { closeFileManagerDatabase } from "../addons/file-manager-host.js";
 
 type DbCommand = "migrate" | "seed" | "drop" | "fresh" | "migrations:list";
 const validCommands: DbCommand[] = ["migrate", "seed", "drop", "fresh", "migrations:list"];
@@ -35,6 +36,7 @@ async function main() {
     }
     console.info(`[database] db:${command} completed for "${platformDatabaseName()}"`);
   } finally {
+    await closeFileManagerDatabase();
     await closePlatformDatabase();
   }
 }
@@ -49,10 +51,16 @@ async function listMigrations() {
     timezone: "Z"
   });
   try {
-    const [rows] = await connection.query(
-      "SELECT name, applied_at FROM schema_migrations ORDER BY applied_at, id"
+    const [applicationRows] = await connection.query(
+      "SELECT package_id AS scope, name, applied_at, 'applied' AS status FROM schema_migrations WHERE package_id <> '@codexsun/blog:legacy' ORDER BY applied_at, id"
     );
-    console.table(rows);
+    const [blogRows] = await connection.query(
+      "SELECT scope, name, applied_at, status FROM blog_migration_schema ORDER BY id"
+    );
+    const [fileManagerRows] = await connection.query(
+      "SELECT scope, name, applied_at, status FROM migration_schema WHERE scope='file-manager' ORDER BY id"
+    );
+    console.table([...(applicationRows as object[]), ...(blogRows as object[]), ...(fileManagerRows as object[])]);
   } finally {
     await connection.end();
   }

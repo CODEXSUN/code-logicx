@@ -29,12 +29,14 @@ export async function seedRolePermissionModule(database: Kysely<PlatformDatabase
     auditor: [
       "codelogicx.project-manager.view",
       "codelogicx.task-manager.view",
+      "codelogicx.messaging.view",
       "codelogicx.planning.view",
       "codelogicx.registry.view",
       "codelogicx.github-dashboard.view",
       "codelogicx.orchestration.view",
       "codelogicx.sync.view",
-      "codelogicx.notification.view"
+      "codelogicx.notification.view",
+      "blog.manage"
     ],
     manager: codelogicxPermissions(),
     staff: codelogicxPermissions().filter((key) => key !== "codelogicx.sync.manage"),
@@ -42,12 +44,15 @@ export async function seedRolePermissionModule(database: Kysely<PlatformDatabase
       "codelogicx.project-manager.view",
       "codelogicx.task-manager.view",
       "codelogicx.task-manager.manage",
+      "codelogicx.messaging.view",
+      "codelogicx.messaging.manage",
       "codelogicx.planning.view",
       "codelogicx.planning.manage",
       "codelogicx.registry.view",
       "codelogicx.orchestration.view",
       "codelogicx.github-dashboard.view",
-      "codelogicx.notification.view"
+      "codelogicx.notification.view",
+      "blog.manage"
     ]
   };
   for (const [roleKey, permissionKeys] of Object.entries(codelogicxDefaults)) {
@@ -76,13 +81,15 @@ function codelogicxPermissions() {
     ...[
       "project-manager",
       "task-manager",
+      "messaging",
       "planning",
       "registry",
       "orchestration",
       "sync",
       "notification"
     ].flatMap((module) => ["view", "manage"].map((action) => `codelogicx.${module}.${action}`)),
-    "codelogicx.github-dashboard.view"
+    "codelogicx.github-dashboard.view",
+    "blog.manage"
   ];
 }
 

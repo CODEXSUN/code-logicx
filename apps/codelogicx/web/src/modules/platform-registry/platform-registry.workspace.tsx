@@ -20,6 +20,7 @@ import {
 } from "./platform-registry.list";
 import { PlatformRegistryModuleShow } from "./platform-registry.show";
 import type {
+  ProjectManagerRecord,
   ProjectManagerRegistryGroupNode,
   ProjectManagerRegistryModuleNode,
   ProjectManagerRegistryPlatformNode
@@ -57,7 +58,13 @@ type RegistrySavePayload = {
   status: string;
 };
 
-export function PlatformRegistryWorkspace() {
+export function PlatformRegistryWorkspace({
+  embedded = false,
+  project
+}: {
+  embedded?: boolean;
+  project?: ProjectManagerRecord;
+} = {}) {
   const registry = usePlatformRegistryQuery();
   const mutations = usePlatformRegistryMutations();
   const [platformId, setPlatformId] = useState("");
@@ -66,8 +73,18 @@ export function PlatformRegistryWorkspace() {
   const [editMode, setEditMode] = useState<EditMode>("platform");
   const [form, setForm] = useState<EditForm | null>(null);
   const [error, setError] = useState("");
-  const platforms = registry.data?.platforms ?? [];
-  const selectedPlatform = platforms.find((platform) => platform.id === platformId) ?? null;
+  const allPlatforms = registry.data?.platforms ?? [];
+  const projectPlatform = project
+    ? allPlatforms.find((platform) => platform.key === projectArchitectKey(project)) ?? null
+    : null;
+  const platforms = project
+    ? projectPlatform
+      ? [projectPlatform]
+      : []
+    : allPlatforms.filter((platform) => !isProjectArchitectPlatform(platform.key));
+  const selectedPlatform = project
+    ? projectPlatform
+    : platforms.find((platform) => platform.id === platformId) ?? null;
   const groups = selectedPlatform?.groups ?? [];
   const groupOptions = flattenGroups(groups);
   const selectedGroup = groupOptions.find((group) => group.id === groupId) ?? null;
@@ -87,7 +104,9 @@ export function PlatformRegistryWorkspace() {
       ? "module"
       : selectedPlatform
         ? "group"
-        : "platform";
+        : project
+          ? "project"
+          : "platform";
   const busy =
     registry.isFetching ||
     mutations.savePlatform.isPending ||
@@ -156,7 +175,24 @@ export function PlatformRegistryWorkspace() {
     if (selectedModule) return setModuleId(selectedModule.parentModuleId || "");
     if (isFlattenedTenantApps) return openPlatform();
     if (selectedGroup) return setGroupId("");
+    if (project) return;
     if (selectedPlatform) openPlatform();
+  }
+
+  async function initializeProjectArchitect() {
+    if (!project) return;
+    try {
+      await mutations.savePlatform.mutateAsync({
+        description: `Architecture registry for ${project.title}.`,
+        key: projectArchitectKey(project),
+        name: project.title,
+        sortOrder: 0,
+        status: "active"
+      });
+      toast.success("Project Architect is ready");
+    } catch (value) {
+      setError(value instanceof Error ? value.message : "Project Architect setup failed.");
+    }
   }
 
   function save() {
@@ -184,6 +220,7 @@ export function PlatformRegistryWorkspace() {
     const parent = moduleOptions.find((module) => module.id === selectedModule.parentModuleId);
     return (
       <PlatformRegistryModuleShow
+        embedded={embedded}
         busy={busy}
         module={selectedModule}
         parentName={parent?.name ?? selectedGroup?.name ?? ""}
@@ -203,8 +240,11 @@ export function PlatformRegistryWorkspace() {
 
   return (
     <WorkspacePage
+      {...(embedded ? { className: "!mx-0 !w-full !max-w-none !py-0" } : {})}
       title={
-        level === "platform"
+        level === "project"
+          ? "Architect"
+          : level === "platform"
           ? "Platforms"
           : level === "group"
             ? "Module Groups"
@@ -217,7 +257,9 @@ export function PlatformRegistryWorkspace() {
                   : "Modules"
       }
       description={
-        level === "platform"
+        level === "project"
+          ? `Define module groups and registry modules for ${project?.title}.`
+          : level === "platform"
           ? "Platform registry list for super-admins, admin, and tenant."
           : level === "group"
             ? `Module groups in ${selectedPlatform?.name}.`
@@ -229,10 +271,10 @@ export function PlatformRegistryWorkspace() {
                   ? `Module groups in ${selectedModule?.name}.`
                   : `Modules in ${selectedModule?.name}.`
       }
-      technicalName="page.platform-registry"
+      technicalName={project ? "page.project-architect" : "page.platform-registry"}
       actions={
         <div className="flex flex-wrap justify-end gap-2">
-          {level !== "platform" ? (
+          {level !== "platform" && level !== "project" && !(project && level === "group") ? (
             <Button disabled={busy} variant="outline" onClick={goBack}>
               <ArrowLeftIcon className="size-4" />
               Back
@@ -244,12 +286,17 @@ export function PlatformRegistryWorkspace() {
           </Button>
           <Button
             disabled={busy}
-            onClick={() =>
-              level === "platform" ? editPlatform() : level === "group" ? editGroup() : editModule()
-            }
+            onClick={() => {
+              if (level === "project") return void initializeProjectArchitect();
+              if (level === "platform") return editPlatform();
+              if (level === "group") return editGroup();
+              editModule();
+            }}
           >
             <PlusIcon className="size-4" />
-            {level === "platform"
+            {level === "project"
+              ? "Set up Architect"
+              : level === "platform"
               ? "Platform"
               : level === "group"
                 ? "Module Group"
@@ -277,6 +324,19 @@ export function PlatformRegistryWorkspace() {
           onSave={save}
           platforms={platforms}
         />
+      ) : null}
+      {level === "project" ? (
+        <div className="grid min-h-64 place-items-center rounded-xl border border-dashed bg-card p-8 text-center">
+          <div className="max-w-md">
+            <h3 className="font-semibold">Set up the project architecture</h3>
+            <p className="pt-2 text-sm leading-6 text-muted-foreground">
+              Create the project registry root, then add module groups and registry modules.
+            </p>
+            <Button className="mt-4" disabled={busy} onClick={() => void initializeProjectArchitect()}>
+              <PlusIcon className="size-4" /> Set up Architect
+            </Button>
+          </div>
+        </div>
       ) : null}
       {level === "platform" ? (
         <PlatformList
@@ -538,4 +598,14 @@ function payloadFromForm(form: EditForm): RegistrySavePayload {
   if (form.platformId) payload.platformId = form.platformId;
   if (form.routePath) payload.routePath = form.routePath;
   return payload;
+}
+
+const projectArchitectPrefix = "project-architect-";
+
+function projectArchitectKey(project: ProjectManagerRecord) {
+  return `${projectArchitectPrefix}${project.id}`;
+}
+
+function isProjectArchitectPlatform(key: string) {
+  return key.startsWith(projectArchitectPrefix);
 }

@@ -139,6 +139,48 @@ export class ProjectManagerRepository {
     return record;
   }
 
+  async completeReviewHierarchy(review: ProjectManagerRecord, actorEmail: string) {
+    await this.database.transaction().execute(async (transaction) => {
+      const visited = new Set<string>();
+      let child = review;
+      while (child.referenceId) {
+        const parentKind = hierarchyKind(child.referenceType);
+        if (!parentKind) return;
+        const parentRow = await transaction
+          .selectFrom("codelogicx_project_manager_items")
+          .selectAll()
+          .where("kind", "=", parentKind)
+          .where((expression) =>
+            expression.or([
+              expression("uuid", "=", child.referenceId),
+              expression("item_key", "=", child.referenceId)
+            ])
+          )
+          .where("sync_status", "!=", "deleted")
+          .executeTakeFirst();
+        if (!parentRow || visited.has(parentRow.uuid)) return;
+        visited.add(parentRow.uuid);
+        const parent = mapItem(parentRow);
+        if (parent.status !== "completed") {
+          await transaction
+            .updateTable("codelogicx_project_manager_items")
+            .set({ status: "completed", updated_at: new Date() })
+            .where("uuid", "=", parent.id)
+            .executeTakeFirstOrThrow();
+          await writeActivity(transaction, {
+            action: "completed-from-review",
+            actorEmail,
+            details: { reviewId: review.id, reviewKey: review.key },
+            recordKind: parent.kind,
+            recordUuid: parent.id
+          });
+        }
+        if (parentKind === "issue") return;
+        child = parent;
+      }
+    });
+  }
+
   async delete(record: ProjectManagerRecord, actorEmail: string) {
     await this.database.transaction().execute(async (transaction) => {
       await transaction
@@ -496,6 +538,14 @@ function itemValues(record: ProjectManagerRecord) {
     updated_at: new Date(record.updatedAt),
     uuid: record.id
   };
+}
+
+function hierarchyKind(referenceType: string): "activity" | "issue" | "task" | null {
+  const normalized = referenceType.trim().toLowerCase();
+  if (normalized === "action" || normalized === "activity") return "activity";
+  if (normalized === "task") return "task";
+  if (["initiative", "issue", "module"].includes(normalized)) return "issue";
+  return null;
 }
 
 function platformValues(record: ProjectManagerRegistryPlatform) {

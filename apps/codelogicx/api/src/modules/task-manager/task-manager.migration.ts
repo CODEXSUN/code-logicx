@@ -3,8 +3,8 @@ import { renameLegacyTable } from "../../database/database-utils.js";
 import type { CodeLogicXDatabase } from "../../database/schema.js";
 
 export const taskManagerMigration = {
-  description: "Task Manager todos, project links, lookups, and audit activity.",
-  key: "codelogicx.task-manager.sql.v3"
+  description: "Private user-owned Task Manager todos, project links, lookups, and activity.",
+  key: "codelogicx.task-manager.sql.v4"
 } as const;
 
 export async function migrateTaskManagerModule(database: Kysely<CodeLogicXDatabase>) {
@@ -22,6 +22,7 @@ export async function migrateTaskManagerModule(database: Kysely<CodeLogicXDataba
       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
       uuid CHAR(8) NOT NULL,
       scope_key VARCHAR(80) NOT NULL,
+      owner_email VARCHAR(240) NOT NULL,
       title VARCHAR(240) NOT NULL,
       description TEXT NOT NULL,
       category VARCHAR(80) NOT NULL DEFAULT 'work',
@@ -34,12 +35,18 @@ export async function migrateTaskManagerModule(database: Kysely<CodeLogicXDataba
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       UNIQUE KEY uq_codelogicx_task_manager_todos_uuid (uuid),
-      KEY idx_codelogicx_task_manager_todos_scope_order (scope_key, position, updated_at)
+      KEY idx_codelogicx_task_manager_todos_owner_order
+        (scope_key, owner_email, position, updated_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `.execute(database);
 
   await sql`ALTER TABLE codelogicx_task_manager_todos
     ADD COLUMN IF NOT EXISTS project_uuid CHAR(36) NOT NULL DEFAULT '' AFTER group_name`.execute(
+    database
+  );
+
+  await sql`ALTER TABLE codelogicx_task_manager_todos
+    ADD COLUMN IF NOT EXISTS owner_email VARCHAR(240) NOT NULL DEFAULT '' AFTER scope_key`.execute(
     database
   );
 
@@ -71,6 +78,25 @@ export async function migrateTaskManagerModule(database: Kysely<CodeLogicXDataba
       KEY idx_codelogicx_task_manager_activity_record (record_uuid, created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `.execute(database);
+
+  await sql`
+    UPDATE codelogicx_task_manager_todos AS todo
+    SET todo.owner_email = COALESCE(
+      (
+        SELECT activity.actor_email
+        FROM codelogicx_task_manager_activity AS activity
+        WHERE activity.record_uuid = todo.uuid AND activity.action = 'created'
+        ORDER BY activity.created_at ASC
+        LIMIT 1
+      ),
+      ''
+    )
+    WHERE todo.owner_email = ''
+  `.execute(database);
+
+  await sql`ALTER TABLE codelogicx_task_manager_todos
+    ADD INDEX IF NOT EXISTS idx_codelogicx_task_manager_todos_owner_order
+      (scope_key, owner_email, position, updated_at)`.execute(database);
 
   return taskManagerMigration;
 }

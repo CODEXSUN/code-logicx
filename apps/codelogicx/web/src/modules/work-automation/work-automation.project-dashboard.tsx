@@ -4,6 +4,7 @@ import {
   CalendarDaysIcon,
   CheckCircle2Icon,
   CircleDotIcon,
+  ListChecksIcon,
   ListTreeIcon,
   PlusIcon,
   UserRoundIcon
@@ -17,17 +18,25 @@ type ProjectDashboardProps = {
   project: ProjectManagerRecord;
   records: ProjectManagerRecord[];
   onAddIssue(): void;
+  onOpenAction(action: ProjectManagerRecord): void;
   onOpenIssues(): void;
+  onOpenTask(task: ProjectManagerRecord): void;
 };
 
 export function ProjectDashboard({
   project,
   records,
   onAddIssue,
-  onOpenIssues
+  onOpenAction,
+  onOpenIssues,
+  onOpenTask
 }: ProjectDashboardProps) {
   const descendants = records.filter((record) => belongsToProject(record, project, records));
   const issues = descendants.filter((record) => record.kind === "issue");
+  const tasks = descendants.filter((record) => record.kind === "task");
+  const actions = descendants
+    .filter((record) => record.kind === "activity")
+    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
   const completed = descendants.filter((record) => isCompleted(record.status)).length;
   const blocked = descendants.filter((record) => record.status === "blocked").length;
   const progress = descendants.length ? Math.round((completed / descendants.length) * 100) : 0;
@@ -75,7 +84,7 @@ export function ProjectDashboard({
                 detail={`${completed} completed items`}
               />
               <Metric
-                label="Initiatives"
+                label="Modules"
                 value={String(issues.length)}
                 detail={`${activeCount(issues)} active`}
               />
@@ -92,59 +101,104 @@ export function ProjectDashboard({
               />
             </section>
 
-            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
-              <section className="rounded-xl border bg-card p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="font-semibold">Initiative overview</h3>
+            <section
+              aria-label="Open modules list"
+              className="cursor-pointer rounded-xl border bg-card p-5 transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              role="link"
+              tabIndex={0}
+              onClick={onOpenIssues}
+              onKeyDown={(event) => {
+                if (event.target !== event.currentTarget) return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onOpenIssues();
+                }
+              }}
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="font-semibold">Module overview</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Current delivery state for this project.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpenIssues();
+                    }}
+                  >
+                    <ListTreeIcon className="size-4" />
+                    View modules
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onAddIssue();
+                    }}
+                  >
+                    <PlusIcon className="size-4" />
+                    Add module
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-5 grid gap-3">
+                {issues.length ? (
+                  issues.slice(0, 6).map((issue) => (
+                    <OverviewRecordRow
+                      icon={CircleDotIcon}
+                      key={issue.id}
+                      record={issue}
+                      onClick={onOpenIssues}
+                    />
+                  ))
+                ) : (
+                  <div className="rounded-lg border border-dashed p-8 text-center">
+                    <div className="text-sm font-medium">No modules added</div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Current delivery state for this project.
+                      Create the first module to begin delivery planning.
                     </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" onClick={onOpenIssues}>
-                      <ListTreeIcon className="size-4" />
-                      View initiatives
+                    <Button
+                      className="mt-4"
+                      size="sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onAddIssue();
+                      }}
+                    >
+                      <PlusIcon className="size-4" /> Add module
                     </Button>
-                    <Button size="sm" onClick={onAddIssue}>
-                      <PlusIcon className="size-4" />
-                      Add initiative
-                    </Button>
                   </div>
-                </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {issues.length ? (
-                    issues.slice(0, 6).map((issue) => (
-                      <button
-                        className="flex items-start gap-3 rounded-lg bg-muted/45 p-3 text-left transition-colors hover:bg-muted"
-                        key={issue.id}
-                        type="button"
-                        onClick={onOpenIssues}
-                      >
-                        <CircleDotIcon className="mt-0.5 size-4 shrink-0 text-primary" />
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-medium">{issue.title}</span>
-                          <span className="mt-1 block font-mono text-xs text-muted-foreground">
-                            {issue.key} · {title(issue.status)}
-                          </span>
-                        </span>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="col-span-full rounded-lg border border-dashed p-8 text-center">
-                      <div className="text-sm font-medium">No initiatives added</div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Create the first initiative to begin delivery planning.
-                      </p>
-                      <Button className="mt-4" size="sm" onClick={onAddIssue}>
-                        <PlusIcon className="size-4" /> Add initiative
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </section>
+                )}
+              </div>
+            </section>
 
-              <aside className="grid gap-6">
+            <div className="grid items-start gap-6 xl:grid-cols-2">
+              <OverviewRecordSection
+                description="Project tasks linked through the module hierarchy."
+                emptyDescription="Add tasks from a module to track project delivery."
+                emptyLabel="No tasks added"
+                icon={ListChecksIcon}
+                records={tasks.slice(0, 8)}
+                title="Tasks"
+                onOpen={onOpenTask}
+              />
+              <OverviewRecordSection
+                description="Latest project actions, ordered by recent updates."
+                emptyDescription="Actions appear here when work begins on a task."
+                emptyLabel="No actions added"
+                icon={ActivityIcon}
+                records={actions.slice(0, 8)}
+                title="Actions"
+                onOpen={onOpenAction}
+              />
+            </div>
+
+            <div className="grid items-start gap-6 xl:grid-cols-2">
                 <section className="rounded-xl border bg-card p-5">
                   <h3 className="font-semibold">Project details</h3>
                   <div className="mt-4 grid gap-4">
@@ -168,7 +222,7 @@ export function ProjectDashboard({
                 </section>
 
                 <section className="rounded-xl border bg-card p-5">
-                  <h3 className="font-semibold">Recent project activity</h3>
+                  <h3 className="font-semibold">Recent project actions</h3>
                   <div className="mt-4 divide-y">
                     {recent.map((record) => (
                       <div
@@ -191,12 +245,85 @@ export function ProjectDashboard({
                     ))}
                   </div>
                 </section>
-              </aside>
             </div>
           </div>
         }
       />
     </div>
+  );
+}
+
+function OverviewRecordRow({
+  icon: Icon,
+  onClick,
+  record
+}: {
+  icon: typeof CircleDotIcon;
+  onClick(): void;
+  record: ProjectManagerRecord;
+}) {
+  return (
+    <button
+      className="flex w-full items-center gap-3 rounded-lg border border-transparent bg-muted/35 p-3 text-left transition-colors hover:border-border hover:bg-muted/65"
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+    >
+      <Icon className="size-4 shrink-0 text-primary" />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium">{record.title}</span>
+        <span className="mt-1 block truncate font-mono text-xs text-muted-foreground">
+          {record.key} · {title(record.status)}
+        </span>
+      </span>
+      <WorkspaceStatusBadge label={title(record.status)} tone={statusTone(record.status)} />
+    </button>
+  );
+}
+
+function OverviewRecordSection({
+  description,
+  emptyDescription,
+  emptyLabel,
+  icon,
+  onOpen,
+  records,
+  title: sectionTitle
+}: {
+  description: string;
+  emptyDescription: string;
+  emptyLabel: string;
+  icon: typeof CircleDotIcon;
+  onOpen(record: ProjectManagerRecord): void;
+  records: ProjectManagerRecord[];
+  title: string;
+}) {
+  return (
+    <section className="rounded-xl border bg-card p-5">
+      <div>
+        <h3 className="font-semibold">{sectionTitle}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      </div>
+      <div className="mt-5 grid gap-3">
+        {records.length ? (
+          records.map((record) => (
+            <OverviewRecordRow
+              icon={icon}
+              key={record.id}
+              record={record}
+              onClick={() => onOpen(record)}
+            />
+          ))
+        ) : (
+          <div className="rounded-lg border border-dashed p-8 text-center">
+            <div className="text-sm font-medium">{emptyLabel}</div>
+            <p className="mt-1 text-sm text-muted-foreground">{emptyDescription}</p>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 

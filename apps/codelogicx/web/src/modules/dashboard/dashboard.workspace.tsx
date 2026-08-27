@@ -5,6 +5,8 @@ import { useProjectManagerResultQuery } from "../project-manager/project-manager
 import type { ProjectManagerRecord } from "../project-manager/project-manager.types";
 import { useTodayDashboard } from "../today/today.hooks";
 import type { TodayRecord } from "../today/today.types";
+import { DashboardDock } from "./dashboard.dock";
+import { quoteForDate } from "./dashboard.quotes";
 
 export function DashboardWorkspace() {
   const todayQuery = useTodayDashboard();
@@ -22,13 +24,14 @@ export function DashboardWorkspace() {
     .filter((record) => record.active)
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
     .slice(0, 4);
+  const dailyQuote = quoteForDate(new Date());
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-8 lg:px-8">
       <header className="flex min-h-52 flex-col items-center justify-center border-b px-4 py-10 text-center">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Good morning, Sundar</h1>
         <p className="mt-3 text-base text-muted-foreground sm:text-lg">
-          Here&apos;s what&apos;s happening across your engineering workspace
+          &ldquo;{dailyQuote}&rdquo;
         </p>
       </header>
 
@@ -39,7 +42,11 @@ export function DashboardWorkspace() {
       ) : null}
 
       <section className="grid grid-cols-2 border-b py-6 sm:grid-cols-4">
-        <Metric href="/app/codelogicx/projects" label="Active projects" value={activeProjects.length} />
+        <Metric
+          href="/app/codelogicx/projects"
+          label="Active projects"
+          value={activeProjects.length}
+        />
         <Metric
           href="/app/codelogicx/my-work?view=reviews"
           label="Reviews waiting"
@@ -57,8 +64,12 @@ export function DashboardWorkspace() {
         />
       </section>
 
-      <div className="grid gap-x-12 gap-y-9 py-8 lg:grid-cols-2">
-        <Section href="/app/codelogicx/my-work" title="My work">
+      <section className="flex justify-center px-4 pt-16" aria-label="Quick navigation">
+        <DashboardDock />
+      </section>
+
+      <div className="grid gap-x-12 gap-y-9 pb-8 pt-16 lg:grid-cols-2">
+        <Section href="/app/codelogicx/tasks" title="Todos">
           <RecordList empty="No task needs your focus today." records={focus} />
         </Section>
 
@@ -103,12 +114,12 @@ export function DashboardWorkspace() {
           </div>
         </Section>
 
-        <Section href="/app/codelogicx/my-work?view=activity" title="Recent activity">
+        <Section href="/app/codelogicx/my-work?view=activity" title="Recent actions">
           <div className="divide-y rounded-lg border bg-card">
             {activity.length ? (
               activity.map((record) => <ActivityRow key={record.id} record={record} />)
             ) : (
-              <Empty text="No recent activity." />
+              <Empty text="No recent actions." />
             )}
           </div>
         </Section>

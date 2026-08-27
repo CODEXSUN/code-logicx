@@ -1,0 +1,12 @@
+import { IonIcon, IonSpinner } from "@ionic/react";
+import { closeOutline, sendOutline } from "ionicons/icons";
+import { useEffect, useState } from "react";
+
+type HoneyConversation = { id: string; messages: Array<{ body: string; id: string; role: "assistant" | "user" }> };
+
+export function HoneyPet({ send }: { send: (message: string, threadId: string | null) => Promise<HoneyConversation> }) {
+  const [frame, setFrame] = useState(0); const [chatOpen, setChatOpen] = useState(false); const [conversation, setConversation] = useState<HoneyConversation | null>(null); const [message, setMessage] = useState(""); const [pending, setPending] = useState(false); const [error, setError] = useState("");
+  useEffect(() => { const timer = window.setInterval(() => setFrame((current) => (current + 1) % 7), 420); const open = () => setChatOpen(true); window.addEventListener("codelogicx:honey-open", open); return () => { window.clearInterval(timer); window.removeEventListener("codelogicx:honey-open", open); }; }, []);
+  async function submit(event: React.FormEvent) { event.preventDefault(); const body = message.trim(); if (!body || pending) return; setPending(true); setError(""); try { setConversation(await send(body, conversation?.id ?? null)); setMessage(""); } catch (reason) { setError(reason instanceof Error ? reason.message : "Honey could not respond."); } finally { setPending(false); } }
+  return <div className="mobile-honey"><button aria-label="Talk to Honey" className="honey-sprite" onClick={() => setChatOpen(true)} style={{ backgroundPosition: `${-frame * 96}px 0` }}/>{chatOpen ? <section className="honey-chat"><header><div><strong>Honey</strong><small>CodeLogicX companion</small></div><button aria-label="Close Honey" onClick={() => setChatOpen(false)}><IonIcon icon={closeOutline}/></button></header><div className="honey-messages">{conversation?.messages.length ? conversation.messages.slice(-6).map((item) => <p className={item.role === "user" ? "is-user" : ""} key={item.id}>{item.body}</p>) : <div><strong>Hi, I’m Honey.</strong><span>What can I help you work through?</span></div>}{pending ? <IonSpinner name="dots"/> : null}</div>{error ? <p className="honey-error">{error}</p> : null}<form onSubmit={(event) => void submit(event)}><input aria-label="Message Honey" onChange={(event) => setMessage(event.target.value)} placeholder="Ask Honey…" value={message}/><button aria-label="Send message" disabled={pending || !message.trim()} type="submit"><IonIcon icon={sendOutline}/></button></form></section> : null}</div>;
+}

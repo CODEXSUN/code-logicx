@@ -264,6 +264,25 @@ export function WorkAutomationWorkspace({
   useEffect(() => {
     if (workflowOnly) return;
     const params = new URLSearchParams(window.location.search);
+    const listRecordId = params.get("listRecord") ?? "";
+    const listKind = params.get("listKind") as FlowKind | null;
+    if (listRecordId && listKind && flow.includes(listKind)) {
+      const target = workflowRecords.find(
+        (record) => record.kind === listKind && record.id === listRecordId
+      );
+      const targetKey = target ? `list-record:${target.id}` : "";
+      if (target && openedRecord.current !== targetKey) {
+        openedRecord.current = targetKey;
+        setProjectDashboard(false);
+        setPath(buildParentPath(target, workflowRecords));
+        setForcedKind(target.kind as FlowKind);
+        setEditing(null);
+        setSearch(target.key);
+        setStatusFilter("all");
+        setPage(1);
+      }
+      return;
+    }
     const reviewParentId = params.get("reviewParent") ?? "";
     if (reviewParentId) {
       setProjectDashboard(false);
@@ -508,6 +527,21 @@ export function WorkAutomationWorkspace({
     setPage(1);
   }
 
+  function openDashboardRecordList(record: ProjectManagerRecord) {
+    setProjectDashboard(false);
+    setPath(buildParentPath(record, workflowRecords));
+    setForcedKind(record.kind as FlowKind);
+    setEditing(null);
+    setSearch(record.key);
+    setStatusFilter("all");
+    setPage(1);
+    window.history.pushState(
+      { page: "project-record-list", recordId: record.id },
+      "",
+      `/app/codelogicx/projects?listKind=${encodeURIComponent(record.kind)}&listRecord=${encodeURIComponent(record.id)}`
+    );
+  }
+
   function selectRoadmapView(stage: DeliveryStage) {
     if (stage === "roadmap" || stage === "gantt") {
       const view = stage === "gantt" ? "gantt" : "timeline";
@@ -531,12 +565,15 @@ export function WorkAutomationWorkspace({
 
   return (
     <WorkspacePage
+      {...(rootProjectsView
+        ? { className: "!mx-0 !w-full !max-w-none px-4 sm:px-5 lg:px-8" }
+        : {})}
       title={
         workflowOnly
           ? roadmapIssue
             ? roadmapIssue.title
             : initialView === "roadmap"
-              ? "Initiative Roadmap"
+              ? "Module Roadmap"
               : "Workflow"
           : projectDashboard && dashboardProject
             ? dashboardProject.title
@@ -548,14 +585,14 @@ export function WorkAutomationWorkspace({
       }
       description={
         roadmapIssue
-          ? `Initiative Roadmap · ${roadmapIssue.key} · ${label(roadmapIssue.status)} · ${label(roadmapIssue.type)}`
+          ? `Module Roadmap · ${roadmapIssue.key} · ${label(roadmapIssue.status)} · ${label(roadmapIssue.type)}`
           : workflowOnly
-            ? "Initiative performance across tasks, activities, reviews, and Gantt schedule."
+            ? "Module performance across tasks, actions, reviews, and Gantt schedule."
             : projectDashboard && dashboardProject
               ? `Project dashboard · ${dashboardProject.key}`
               : parent
                 ? `Linked ${label(kind).toLowerCase()} records for this ${label(parent.kind).toLowerCase()}.`
-                : "Select a project to drill down through initiatives, tasks, activities, and reviews."
+                : "Select a project to drill down through modules, tasks, actions, and reviews."
       }
       technicalName={workflowOnly ? "page.workflow" : `page.work-automation.${plural(kind)}`}
       actions={
@@ -688,7 +725,7 @@ export function WorkAutomationWorkspace({
                 allowTextValue={false}
                 emptyLabel="No workflow items found."
                 options={workflowSearchOptions}
-                placeholder="Search any project, initiative, task, activity, review, or ID"
+                placeholder="Search any project, module, task, action, review, or ID"
                 value={selectedWorkflowRecord}
                 onValueChange={setSelectedWorkflowRecord}
               />
@@ -775,12 +812,12 @@ export function WorkAutomationWorkspace({
             <div className="rounded-md border border-dashed bg-card p-10 text-center">
               <div className="font-medium">
                 {initialView === "roadmap"
-                  ? "Initiative roadmap unavailable"
+                  ? "Module roadmap unavailable"
                   : "Select a workflow record"}
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 {initialView === "roadmap"
-                  ? "Open a project initiative and select Roadmap to view its delivery performance."
+                  ? "Open a project module and select Roadmap to view its delivery performance."
                   : "Select a workflow record to load its delivery timeline."}
               </p>
             </div>
@@ -791,6 +828,7 @@ export function WorkAutomationWorkspace({
           project={dashboardProject}
           records={workflowRecords}
           onAddIssue={openNew}
+          onOpenAction={(action) => openDashboardRecordList(action)}
           onOpenIssues={() => {
             setProjectDashboard(false);
             window.history.replaceState(
@@ -799,6 +837,7 @@ export function WorkAutomationWorkspace({
               `/app/codelogicx/projects?project=${encodeURIComponent(dashboardProject.id)}&view=issues`
             );
           }}
+          onOpenTask={(task) => openDashboardRecordList(task)}
         />
       ) : (
         <>
@@ -853,6 +892,20 @@ export function WorkAutomationWorkspace({
                     { page: "project-dashboard", projectId: record.id },
                     "",
                     `/app/codelogicx/projects?project=${encodeURIComponent(record.id)}`
+                  );
+                }}
+                onOpenWork={(record) => {
+                  setProjectDashboard(false);
+                  setPath(buildParentPath(record, workflowRecords));
+                  setForcedKind(record.kind as FlowKind);
+                  setEditing(null);
+                  setSearch(record.key);
+                  setStatusFilter("all");
+                  setPage(1);
+                  window.history.pushState(
+                    { page: "project-record-list", recordId: record.id },
+                    "",
+                    `/app/codelogicx/projects?listKind=${encodeURIComponent(record.kind)}&listRecord=${encodeURIComponent(record.id)}`
                   );
                 }}
                 onRestore={(record) => mutations.restore.mutate(record.id)}
@@ -1033,7 +1086,7 @@ export function WorkAutomationWorkspace({
               page={currentPage}
               rowsPerPage={rowsPerPage}
               showingLabel={buildShowingLabel(currentPage, rowsPerPage, filtered.length)}
-              singularLabel={kind}
+              singularLabel={label(kind).toLowerCase()}
               totalCount={filtered.length}
               totalPages={totalPages}
               onNextPage={() => setPage((value) => Math.min(totalPages, value + 1))}
@@ -1079,9 +1132,9 @@ function DeliveryDrillRow({
   onSelect: (stage: DeliveryStage) => void;
 }) {
   const stages: Array<{ id: DeliveryStage; label: string }> = [
-    { id: "issue", label: "Initiatives" },
+    { id: "issue", label: "Modules" },
     { id: "task", label: "Tasks" },
-    { id: "activity", label: "Activities" },
+    { id: "activity", label: "Actions" },
     { id: "review", label: "Reviews" },
     { id: "roadmap", label: "Roadmap" },
     { id: "gantt", label: "Gantt" }
@@ -1142,11 +1195,7 @@ function IssueDialog({
     setForm((current) => ({ ...current, [key]: value }));
   return (
     <WorkspaceUpsertDialog
-      className={
-        kind === "project" || kind === "issue"
-          ? "max-h-[90vh] overflow-y-auto sm:max-w-6xl"
-          : "max-h-[90vh] overflow-y-auto sm:max-w-4xl"
-      }
+      className="max-h-[90vh] overflow-y-auto sm:max-w-6xl"
       description={
         parent
           ? `This ${label(kind).toLowerCase()} belongs to ${parent.title}.`
@@ -1436,8 +1485,8 @@ function availableDeliveryStages(path: ProjectManagerRecord[]) {
   return enabled;
 }
 function plural(kind: FlowKind) {
-  if (kind === "issue") return "initiatives";
-  return kind === "activity" ? "activities" : `${kind}s`;
+  if (kind === "issue") return "modules";
+  return kind === "activity" ? "actions" : `${kind}s`;
 }
 function usesPriority(kind: FlowKind) {
   return kind === "project" || kind === "issue" || kind === "task";
@@ -1457,7 +1506,7 @@ function dateLabel(kind: FlowKind) {
   return kind === "project"
     ? "Target finish"
     : kind === "activity"
-      ? "Activity date"
+      ? "Action date"
       : kind === "review"
         ? "Review due date"
         : kind === "issue"
@@ -1473,7 +1522,7 @@ function detailsLabel(kind: FlowKind) {
         ? "Review notes and feedback"
         : kind === "task"
           ? "Execution details"
-          : "Initiative brief and intended outcome";
+          : "Module brief and intended outcome";
 }
 function nextRecordKey(
   kind: FlowKind,
@@ -1553,7 +1602,7 @@ function isolateWorkflow(
   }
   const scoped = [...included.values()];
   return {
-    activities: scoped.filter((record) => record.kind === "activity"),
+    actions: scoped.filter((record) => record.kind === "activity"),
     issues: scoped.filter((record) => record.kind === "issue"),
     projects: scoped.filter((record) => record.kind === "project"),
     reviews: scoped.filter((record) => record.kind === "review"),
@@ -1571,7 +1620,8 @@ function uniqueOptions(options: WorkspaceLookupOption[]) {
   ];
 }
 function label(value: string) {
-  if (value === "issue") return "Initiative";
+  if (value === "issue") return "Module";
+  if (value === "activity") return "Action";
   return value
     .split("-")
     .filter(Boolean)

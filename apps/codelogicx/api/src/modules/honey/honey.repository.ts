@@ -133,10 +133,24 @@ class HoneyRepository {
     if (Number(result.numUpdatedRows) === 0) throw AppError.notFound("Honey memory was not found.");
   }
 
-  async rememberCandidate(actorId: string, threadUuid: string, content: string) {
+  async rememberCandidate(
+    actorId: string,
+    threadUuid: string,
+    content: string,
+    context: { projectId?: string | null; projectTitle?: string | null }
+  ) {
+    if (
+      /\b(?:add|create|make|post|delete|remove|complete)\s+(?:a\s+|new\s+)?(?:task|todo)\b/iu.test(
+        content
+      )
+    ) {
+      return;
+    }
     if (
       content.length < 20 ||
-      !/\b(?:remember|prefer|always|business|customer|workflow|automation)\b/iu.test(content)
+      !/\b(?:remember|prefer|always|business|customer|project|workflow|automation)\b/iu.test(
+        content
+      )
     )
       return;
     const existing = await getCodeLogicXDatabase()
@@ -151,10 +165,12 @@ class HoneyRepository {
       .values({
         actor_id: actorId,
         content,
-        kind: "conversation-candidate",
+        kind: context.projectId ? "project-context" : "conversation-candidate",
         source_thread_uuid: threadUuid,
         review_note: "",
-        source_label: `Honey conversation ${threadUuid}`,
+        source_label: context.projectTitle
+          ? `${context.projectTitle} via Honey conversation ${threadUuid}`
+          : `Honey conversation ${threadUuid}`,
         status: "pending",
         supersedes_uuid: null,
         uuid: randomBytes(8).toString("hex"),

@@ -32,17 +32,17 @@ const applications: AppDeskEntry[] = [
     url: "/app/codelogicx/hostinger"
   },
   {
-    description: "Projects, initiatives, and development workspaces.",
+    description: "Projects, modules, and development workspaces.",
     group: "Development",
     icon: FolderKanbanIcon,
     title: "Projects",
     url: "/app/codelogicx/projects"
   },
   {
-    description: "Initiative planning and delivery roadmap.",
+    description: "Module planning and delivery roadmap.",
     group: "Development",
     icon: FolderKanbanIcon,
-    title: "Initiative Roadmap",
+    title: "Module Roadmap",
     url: "/app/codelogicx/roadmap"
   },
   {

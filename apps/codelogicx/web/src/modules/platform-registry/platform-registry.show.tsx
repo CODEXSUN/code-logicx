@@ -35,6 +35,7 @@ type Section = "actions" | "database" | "events" | "files" | "info" | "routes";
 
 export function PlatformRegistryModuleShow({
   busy,
+  embedded = false,
   module,
   parentName,
   onBack,
@@ -43,6 +44,7 @@ export function PlatformRegistryModuleShow({
   onUpdate
 }: {
   busy: boolean;
+  embedded?: boolean;
   module: ProjectManagerRegistryModuleNode;
   parentName: string;
   onBack: () => void;
@@ -98,6 +100,7 @@ export function PlatformRegistryModuleShow({
   ];
   return (
     <WorkspacePage
+      {...(embedded ? { className: "!mx-0 !w-full !max-w-none !py-0" } : {})}
       title={module.name}
       description={module.description || `Module registry profile for ${module.name}.`}
       technicalName="page.platform-registry.module.show"

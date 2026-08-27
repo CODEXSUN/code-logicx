@@ -41,7 +41,24 @@ import {
   migrateModelProviders,
   modelProviderMigration
 } from "../modules/orchestration/model-provider.migration.js";
-import { ideasMigration, migrateIdeasModule } from "../modules/ideas/ideas.migration.js";
+import {
+  ideasAttachmentStorageMigration,
+  ideasAssigneesMigration,
+  ideasColorsMigration,
+  ideasMigration,
+  ideasPrivateByDefaultMigration,
+  ideasVisibilityMigration,
+  migrateIdeaAttachmentStorage,
+  migrateIdeaAssignees,
+  migrateIdeaColors,
+  migrateIdeasModule,
+  migrateIdeasPrivateByDefault,
+  migrateIdeaVisibility
+} from "../modules/ideas/ideas.migration.js";
+import {
+  messagingMigration,
+  migrateMessagingModule
+} from "../modules/messaging/messaging.migration.js";
 
 const databaseContext = new AsyncLocalStorage<Kysely<CodeLogicXDatabase>>();
 const bootstrapPromises = new WeakMap<Kysely<CodeLogicXDatabase>, Promise<void>>();
@@ -56,6 +73,12 @@ const requestDatabase = new Proxy({} as Kysely<CodeLogicXDatabase>, {
 
 const migrationSteps = [
   { migrate: migrateIdeasModule, name: ideasMigration.key },
+  { migrate: migrateIdeaAttachmentStorage, name: ideasAttachmentStorageMigration.key },
+  { migrate: migrateIdeaColors, name: ideasColorsMigration.key },
+  { migrate: migrateIdeaVisibility, name: ideasVisibilityMigration.key },
+  { migrate: migrateIdeasPrivateByDefault, name: ideasPrivateByDefaultMigration.key },
+  { migrate: migrateIdeaAssignees, name: ideasAssigneesMigration.key },
+  { migrate: migrateMessagingModule, name: messagingMigration.key },
   {
     migrate: migrateProjectManagerModule,
     name: projectManagerMigration.key
@@ -86,7 +109,10 @@ export function getCodeLogicXDatabase() {
   return requestDatabase;
 }
 
-export function runWithCodeLogicXDatabase<T>(database: Kysely<CodeLogicXDatabase>, callback: () => T) {
+export function runWithCodeLogicXDatabase<T>(
+  database: Kysely<CodeLogicXDatabase>,
+  callback: () => T
+) {
   return databaseContext.run(database, callback);
 }
 
@@ -136,6 +162,12 @@ export async function migrateCodeLogicXDatabase(db: Kysely<CodeLogicXDatabase>) 
   `.execute(db);
 
   for (const step of migrationSteps) {
+    const applied = await db
+      .selectFrom("schema_migrations")
+      .select("id")
+      .where("name", "=", step.name)
+      .executeTakeFirst();
+    if (applied) continue;
     await step.migrate(db);
     await db
       .insertInto("schema_migrations")

@@ -1,6 +1,6 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { ShieldCheckIcon } from "lucide-react";
+import { DatabaseZapIcon, EyeIcon, EyeOffIcon, Settings2Icon, ShieldCheckIcon, SmartphoneIcon } from "lucide-react";
 import { codelogicxWebBundle } from "@codelogicx/codelogicx-web";
 import { honeyChatClient } from "@codelogicx/codelogicx-web/modules/honey";
 import { useNotificationCenter } from "@codelogicx/codelogicx-web/modules/notification";
@@ -21,6 +21,7 @@ import { PermissionWorkspace } from "../../modules/permission";
 import { RolePermissionWorkspace } from "../../modules/role-permission";
 import { UserProfileWorkspace } from "../../modules/user/user.profile.workspace";
 import { ApplicationSettingsWorkspace } from "./application-settings.workspace";
+import { addonSwitcherItems, resolveAddonDesk } from "./addon-desks";
 
 type IdentityPage =
   | "identity.users"
@@ -36,14 +37,17 @@ export function AppDesk() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const claims = readClaims();
   const notifications = useNotificationCenter();
+  const [honeyVisible, setHoneyVisible] = useState(() => window.localStorage.getItem("codelogicx.screen-companion.visible") !== "false");
   const administrator = canAccessAdministratorSettings(claims.role);
   const identityPage = identityPageFromPath(pathname);
   const workspace = codelogicxWebBundle.resolveWorkspace(pathname);
-  const showingSettings = pathname === "/app/settings";
+  const addonDesk = resolveAddonDesk(pathname);
+  const showingSettings = pathname.startsWith("/app/settings");
+  const settingsPage = pathname === "/app/settings/mobile-connect" ? "mobile-connect" : "clear-cache";
   const invalidIdentityPage = Boolean(
     identityPage && identityPage !== "identity.profile" && !administrator
   );
-  const invalidPath = !workspace && !identityPage && !showingSettings;
+  const invalidPath = !workspace && !addonDesk && !identityPage && !showingSettings;
 
   useEffect(() => {
     if (invalidIdentityPage || invalidPath) {
@@ -60,22 +64,31 @@ export function AppDesk() {
   const showingIdentity = Boolean(identityPage && !invalidIdentityPage);
   const showingGitHub = workspace?.group === "GitHub";
   const headerTitle = showingSettings
-    ? "Clear cache"
+      ? settingsPage === "mobile-connect" ? "Mobile Connect" : "Clear cache"
     : showingIdentity
       ? identityTitle(identityPage!)
-      : (workspace?.title ?? "Engineering Command Center");
+      : (addonDesk?.workspace.title ?? workspace?.title ?? "Engineering Command Center");
   const globalSearchItems = buildGlobalSearchItems(administrator);
+  const brand = addonDesk
+    ? {
+        logoAlt: addonDesk.title,
+        logoDarkSrc: "/logo/logo-dark.svg",
+        logoSrc: "/logo/logo.svg",
+        subtitle: addonDesk.subtitle,
+        title: addonDesk.title
+      }
+    : {
+        logoAlt: "CodeLogicX",
+        logoDarkSrc: "/logo/logo-dark.svg",
+        logoSrc: "/logo/logo.svg",
+        subtitle: "Developer Portal",
+        title: "CodeLogicX"
+      };
 
   return (
     <AuthGate>
       <ApplicationLayout
-        brand={{
-          logoAlt: "CodeLogicX",
-          logoDarkSrc: "/logo/logo-dark.svg",
-          logoSrc: "/logo/logo.svg",
-          subtitle: "Developer CodeLogicX",
-          title: "CodeLogicX"
-        }}
+        brand={brand}
         companion={{
           chat: honeyChatClient,
           label: "Honey",
@@ -85,9 +98,16 @@ export function AppDesk() {
         globalSearchItems={globalSearchItems}
         headerTitle={headerTitle}
         menuItems={
-          showingIdentity
+          addonDesk
+            ? addonDesk.menuItems
+            : showingIdentity
             ? buildIdentityMenu(identityPage!, navigate, administrator)
-            : buildApplicationMenu(workspace?.id ?? "")
+            : buildApplicationMenu(workspace?.id ?? "", honeyVisible, navigate, settingsPage, () => {
+                const next = !honeyVisible;
+                setHoneyVisible(next);
+                window.localStorage.setItem("codelogicx.screen-companion.visible", String(next));
+                window.dispatchEvent(new CustomEvent("codelogicx:screen-companion-visibility", { detail: next }));
+              })
         }
         onLogout={async () => {
           await logout();
@@ -108,7 +128,10 @@ export function AppDesk() {
         }}
         versionLabel={`v ${__APP_VERSION__}`}
         workspaceItems={[
-          codelogicxWebBundle.applicationSwitcherItem(!showingIdentity && !showingGitHub),
+          codelogicxWebBundle.applicationSwitcherItem(
+            Boolean(workspace && !showingIdentity && !showingGitHub)
+          ),
+          ...addonSwitcherItems(addonDesk?.id),
           codelogicxWebBundle.githubSwitcherItem(showingGitHub),
           ...(administrator
             ? [
@@ -125,11 +148,13 @@ export function AppDesk() {
       >
         <Suspense fallback={<GlobalLoader />}>
           {showingSettings ? (
-            <ApplicationSettingsWorkspace />
+            <ApplicationSettingsWorkspace page={settingsPage} />
           ) : showingIdentity ? (
             <main className="mx-auto w-[calc(100%-2rem)] max-w-[92rem] space-y-5 py-4 lg:w-[calc(100%-3rem)] lg:py-5">
               {renderIdentityPage(identityPage!, claims.email)}
             </main>
+          ) : addonDesk ? (
+            <addonDesk.workspace.component />
           ) : workspace ? (
             <workspace.component />
           ) : (
@@ -141,8 +166,19 @@ export function AppDesk() {
   );
 }
 
-function buildApplicationMenu(activeWorkspaceId: string) {
-  return codelogicxWebBundle.menuItems(activeWorkspaceId);
+function buildApplicationMenu(activeWorkspaceId: string, honeyVisible: boolean, navigate: ReturnType<typeof useNavigate>, settingsPage: "clear-cache" | "mobile-connect", toggleHoney: () => void) {
+  return [
+    ...codelogicxWebBundle.menuItems(activeWorkspaceId),
+    {
+      icon: Settings2Icon,
+      items: [
+        { icon: SmartphoneIcon, isActive: settingsPage === "mobile-connect", onSelect: () => void navigate({ to: "/app/settings/mobile-connect" }), title: "Mobile Connect" },
+        { icon: DatabaseZapIcon, isActive: settingsPage === "clear-cache", onSelect: () => void navigate({ to: "/app/settings" }), title: "Clear cache" },
+        { icon: honeyVisible ? EyeOffIcon : EyeIcon, onSelect: toggleHoney, title: honeyVisible ? "Hide Honey" : "Show Honey" }
+      ],
+      title: "Settings"
+    }
+  ];
 }
 
 function buildGlobalSearchItems(administrator: boolean): GlobalSearchItem[] {
@@ -152,9 +188,15 @@ function buildGlobalSearchItems(administrator: boolean): GlobalSearchItem[] {
     title: entry.title,
     url: workspaceUrl(entry.id)
   }));
-  if (!administrator) return workspaces;
+  const addonWorkspaces = [
+    { group: "Blog", keywords: ["articles", "publishing"], title: "Blog articles", url: "/app/blog/articles" },
+    { group: "File Manager", keywords: ["files", "storage"], title: "File Manager", url: "/app/file-manager/files" },
+    { group: "File Manager", keywords: ["upload", "media"], title: "Uploads", url: "/app/file-manager/uploads" }
+  ];
+  if (!administrator) return [...workspaces, ...addonWorkspaces];
   return [
     ...workspaces,
+    ...addonWorkspaces,
     ...[
       ["Users", "users"],
       ["Roles", "roles"],

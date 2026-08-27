@@ -30,6 +30,8 @@ const permissionKeys = [
   "codelogicx.project-manager.manage",
   "codelogicx.task-manager.view",
   "codelogicx.task-manager.manage",
+  "codelogicx.messaging.view",
+  "codelogicx.messaging.manage",
   "codelogicx.planning.view",
   "codelogicx.planning.manage",
   "codelogicx.registry.view",
@@ -40,7 +42,8 @@ const permissionKeys = [
   "codelogicx.sync.view",
   "codelogicx.sync.manage",
   "codelogicx.notification.view",
-  "codelogicx.notification.manage"
+  "codelogicx.notification.manage",
+  "blog.manage"
 ] as const;
 
 export async function seedPermissionModule(database: Kysely<PlatformDatabase>) {

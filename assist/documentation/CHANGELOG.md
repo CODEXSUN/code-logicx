@@ -1,8 +1,166 @@
 # Changelog
 
-Current version: 1.0.84
-Release tag: v-1.0.84
-Changelog label: v 1.0.84
+Current version: 1.0.87
+Release tag: v-1.0.87
+Changelog label: v 1.0.87
+
+## v-1.0.87
+
+### [v 1.0.87] 2026-08-27 11:05 am - Desktop cloud workspace
+
+#### Database Changes
+
+- Database update: No.
+- No persisted schema, seed, or data changed.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.87.
+- Added a Tauri-owned cloud workspace with Dashboard, Ideas, Projects, Tasks, and Messenger views that read the same CodeLogicX API contracts as the mobile application.
+- Added real one-time desktop pairing through either a six-digit app code or single-use sync URL.
+- Added connected account, endpoint, refresh, disconnect, and local-workspace return controls while keeping cloud records separate from the local SQLite repository workspace.
+- Added desktop-safe API origins and Tauri content-security rules for HTTPS cloud connections and explicitly allowed local development endpoints.
+- Added short-lived OTP attempt limits and cryptographically generated codes without changing mobile QR pairing compatibility.
+- Restored the root Windows release commands and built the first CodeLogicX Tauri release as a WiX MSI, setup EXE, unpacked application set, updater manifest, and checksums.
+- Added optional Authenticode signing through an installed certificate thumbprint or a temporary PFX import with SHA-256 and timestamping.
+- Allowed a local release build to reuse the existing verified OpenCode sidecar when its package source is absent.
+
+#### Verification
+
+- Passed the desktop TypeScript check and Vite production build, including the desktop bundle budget.
+- Passed the Platform API TypeScript build and Platform web production build.
+- Passed `cargo check --manifest-path apps/codelogicx/desktop/src-tauri/Cargo.toml`.
+- Passed the Windows release output check for `CodeLogicX_1.0.87_x64_en-US.msi`, `CodeLogicX_Setup_1.0.87_x64.exe`, and the signed Tauri updater package.
+- Confirmed that this machine has no Authenticode code-signing certificate. Windows can still show an Unknown publisher or SmartScreen warning for these local artifacts.
+- Visually verified the desktop cloud connection screen at the native desktop viewport, including App OTP and Sync URL navigation.
+- Live OTP redemption was not exercised because local API startup is blocked by the pre-existing missing `@codexsun/file-manager/dist/api/index.js` dependency build.
+- No GitHub release was published and no cloud deployment was changed.
+
+## v-1.0.86
+
+### [v 1.0.86] 2026-08-27 - Native Ionic mobile workspace
+
+#### App Codebase Changes
+
+- Added a CodeLogicX-owned Ionic React and Capacitor Android application.
+- Replaced the embedded desktop web interface with mobile-native Home, Ideas, Projects, Tasks, and Messages pages.
+- Added safe-area layout, bottom tab navigation, touch-sized controls, responsive cards, compact density control, and mobile login.
+- Added authenticated mobile API access through `VITE_MOBILE_API_URL` with HTTPS enforcement outside local development.
+- Added the Capacitor native HTTP bridge for cloud API requests without weakening server CORS rules.
+- Reused the CodeLogicX name, logo, launcher icon, and splash branding.
+
+#### Verification
+
+- Passed the mobile TypeScript check and Vite production build.
+- Built and installed Android version `1.0.86` (`versionCode 10086`) on the Android API 36 emulator.
+- Verified authenticated API data for 3 Ideas, 1 Project, 1 Task, and 1 Conversation.
+- Visually verified the native login at 1080 x 2400 with safe-area fit and no desktop shell overflow.
+
+### [v 1.0.86] 2026-08-26 11:40 pm - Ideas workspace and discussion improvements
+
+#### Database Changes
+
+- Database update: Yes.
+- Added `codelogicx.ideas.attachments.storage-key.v2` for file-backed idea images.
+- Added `codelogicx.ideas.colors.v3` for persisted category and status colors.
+- Added `codelogicx.ideas.visibility.v4` for public and author-only private ideas.
+- Added `codelogicx.ideas.private-default.v5` to make new database records private by default without changing existing idea visibility.
+- Added `codelogicx.ideas.assignees.v6` with `codelogicx_ideas.assignee_uuids_json` for verified multi-user idea assignments.
+- Kept legacy database-backed images readable.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.86.
+- Added Markdown editing, working rich-text controls, and file-browser, paste, and drop image uploads.
+- Made the Markdown editor use the full available editor height.
+- Added a small inset around the HTML preview so content does not touch its edges.
+- Stored idea images under `storage/ideas/<idea-uuid>/<image-name>` with stable preview links.
+- Added numeric idea references, category filters, two-line short descriptions, and persistent category and status colors.
+- Removed the short-description input and now generate the excerpt from the first 500 content characters.
+- Added conditional list counts for votes, comments, and replies.
+- Added full-row navigation, lift-on-hover feedback, colored badges, and outlined tag chips.
+- Added nested discussion replies, thumbs-up and thumbs-down reactions, compact relative times, and thread dividers.
+- Added a fixed three-line comment composer with a dark inline post button and space below the discussion thread.
+- Added an icon-only public or private control with a tooltip in the Idea editor.
+- Restricted private idea lists, details, comments, images, polls, drawings, and reactions to the author.
+- Simplified the Ideas editor, list toolbar, sidebar fields, and responsive layout.
+- Made the Ideas list full-width on mobile and limited mobile content previews to two lines.
+- Styled private ideas with a yellow line-art lock, yellow border, and a mild 20% yellow background.
+- Added a right-side metadata drawer that slides out, expands the editor, and provides arrow controls to collapse or reopen it.
+- Replaced drawer chevrons with full arrows and moved the collapse control to the drawer's left edge.
+- Replaced the Ideas list reference `#` prefix with an ordered-list icon so `#` remains reserved for hashtags.
+- Replaced the idea reference prefix with a lightly dimmed hexagon-star badge and a hyphen between the number and title.
+- Added 100-item Ideas pagination that stays hidden until more than 100 filtered ideas are available.
+- Made every new idea private at the editor, API, repository, and database boundaries until its author explicitly shares it publicly.
+- Added automatic `#hashtag` extraction from rich-text and HTML idea content into the persisted tag list.
+- Replaced hardcoded editor mentions with active Identity-user `@mention` autocomplete and automatic assignment when a verified user is selected.
+- Added a searchable, multi-user `Assigned to` field with removable chips and persisted user UUIDs, and displayed assignees on the idea detail page.
+- Added a host-provided active-user directory contract so CodeLogicX verifies Idea assignees without owning Platform identity records.
+
+#### Verification
+
+- Passed the UI, CodeLogicX API, CodeLogicX web, platform API, and platform web TypeScript checks.
+- Passed the CodeLogicX API build after the visibility migration and access-control changes.
+- Passed the image storage round-trip and image validation check.
+- Passed live Ideas list, editor, detail, navigation, badge, statistic, timestamp, and discussion layout checks.
+- Live drawer verification confirmed the editor expands from 641 px to 961 px and returns to 641 px after reopening.
+- Live editor verification confirmed the public and private icon states and their accessible tooltip labels.
+- Live verification confirmed new ideas start with a disabled private lock and a `Save private idea` action, while lists below 101 items do not show pagination.
+- Applied and listed `codelogicx.ideas.private-default.v5` against the local MariaDB database.
+- Applied and listed `codelogicx.ideas.assignees.v6` against the local MariaDB database.
+- Live editor verification confirmed automatic `#automation` and `#review` tag chips, active-user lookup, verified `@admin` autocomplete, and automatic assignment after mention selection.
+- Focused lint did not run because the existing root ESLint configuration imports the unavailable `typescript-eslint-compiler` package; ESLint stopped before analyzing source files.
+- Mobile verification confirmed full-width 375 px idea rows and 48 px two-line content previews.
+- Passed the repository version check and `git diff --check`.
+
+## v-1.0.85
+
+### [v 1.0.85] 2026-08-26 10:15 pm - Enhanced ideas editor and image storage
+
+#### Database Changes
+
+- Database update: Yes.
+- Added the forward migration `codelogicx.ideas.attachments.storage-key.v2` with a nullable `storage_key` column for file-backed idea images.
+- Added the forward migration `codelogicx.ideas.colors.v3` with persisted `category_color` and `status_color` fields.
+- New idea images are stored under `storage/ideas/<idea-uuid>/<image-name>` (or the configured `CODELOGICX_STORAGE_PATH`) while legacy database-backed images remain readable.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.85.
+- Added a Markdown editing mode with GitHub-style Markdown parsing and HTML synchronization.
+- Replaced the list selector with direct bullet, numbered, and task list buttons that preserve the text selection.
+- Added command checks for rich-text toolbar actions and aligned all Tiptap packages to version 3.30.2.
+- Added image selection from the file browser plus paste and drag-and-drop image upload support.
+- Added stable image links that render the uploaded file in the editor and idea preview.
+- Added image type, signature, filename, path, and 8 MB size validation for stored idea images.
+- Exposed each idea's existing database ID as a stable human-facing reference such as `#1` or `#265` across list, detail, and edit views.
+- Increased discussion reply indentation, limited Reply actions to top-level comments, and added mutually exclusive thumbs-up and thumbs-down reaction counts.
+- Added conditional Ideas-list statistics for thumbs up, thumbs down, top-level comments, and replies; zero-value statistics stay hidden.
+- Added category and status color pickers, persisted their selected colors, and rendered tinted category badges plus outlined status badges with matching dots.
+- Reserved a fixed two-line short-description field before the main editor, persisted it through the existing `excerpt` column, and displayed it in the Ideas list.
+- Moved status badges into the right-side metadata lane and increased spacing between idea titles and category badges.
+- Made every Ideas row a clearly interactive full-row target with an upward lift, surface highlight, and shadow on hover or keyboard focus.
+- Styled list tags as compact wrapped chips with rounded gray outlines and a subtle neutral fill.
+- Right-aligned discussion authors and timestamps, added compact second/minute/hour relative times, and corrected local MariaDB timestamps that arrive with an incorrect UTC suffix.
+- Removed vertical borders from top-level comments, retained them for replies, and added an 80%-width divider after every complete comment thread.
+- Replaced Category and Status palette icons with solid, fully rounded-corner color swatches filled by the selected value.
+- Simplified the Ideas editor and made its writing area responsive to the navigation sidebar and viewport size.
+- Simplified the Ideas list to a responsive category-filter-and-action toolbar, retained relaxed row spacing, and removed the duplicate page search, page title block, and floating view controls.
+- Updated the CodeLogicX sidebar tagline to `Developer Portal`.
+
+#### Verification
+
+- Passed the UI, CodeLogicX API, CodeLogicX web, platform API, and platform web TypeScript checks.
+- Passed the Markdown round-trip and bullet-list command runtime check.
+- Passed the idea image filesystem round-trip, filename sanitization, and MIME mismatch validation check.
+- Live Ideas list verification confirmed database-backed references render as `#1` and `#2` after rebuilding the CodeLogicX API package.
+- Live Ideas list verification confirmed zero-value statistics are hidden and the existing discussion renders separate counts for 2 comments and 5 replies.
+- Live verification confirmed the color migration defaults, editor color inputs, tinted category badge, and outlined status badge render without browser errors.
+- Live editor verification confirmed the short-description field reserves two rows, enforces 500 characters, and removes input beyond the second line.
+- Live navigation verification confirmed clicking an idea's description area opens its detail page with no browser errors.
+- Live discussion verification confirmed right-aligned metadata and real relative values such as `40m ago` and `1h ago` instead of repeated `just now` labels.
+- Live discussion verification confirmed two top-level 80% dividers, reply-only vertical borders, and no browser errors.
+- Passed the repository version check and `git diff --check`.
 
 ## v-1.0.84
 

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CodeLogicX</string>
+    <string name="title_activity_main">CodeLogicX</string>
+    <string name="package_name">com.codexsun.codelogicx</string>
+    <string name="custom_url_scheme">com.codexsun.codelogicx</string>
+</resources>

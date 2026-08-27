@@ -1,0 +1,11 @@
+export type Idea = { category: string; commentCount: number; excerpt: string; referenceNumber: number; status: string; tags: string[]; title: string; updatedAt: string; uuid: string };
+export type IdeaInput = { category: string; content: string; status: string; tags: string[]; title: string; visibility: "private" | "public" };
+export type Project = { description: string; id: string; priority: string; status: string; title: string; updatedAt: string };
+export type Todo = { category: string; createdAt: string; description: string; dueDate: string; groupName: string; id: string; position: number; priority: string; projectId: string; status: string; title: string; updatedAt: string };
+export type TodoInput = Pick<Todo, "category" | "description" | "dueDate" | "priority" | "status" | "title">;
+export type Contact = { email: string; name: string; uuid: string };
+export type Message = { content: string; createdAt: string; senderName: string };
+export type Conversation = { id: string; lastMessage: Message | null; members: Contact[]; title: string; unreadCount: number; updatedAt: string };
+export type ConversationMessage = Message & { id: string; senderId: string; sequence: number };
+export type MobileData = { conversations: Conversation[]; ideas: Idea[]; projects: Project[]; todos: Todo[] };
+export type Session = { email: string; name: string };

@@ -9,7 +9,7 @@ import type { ProjectManagerRecord } from "../project-manager/project-manager.ty
 
 export type WorkflowView = "automation" | "gantt" | "kanban" | "reviews" | "roadmap" | "timeline";
 export type WorkflowRecords = {
-  activities: ProjectManagerRecord[];
+  actions: ProjectManagerRecord[];
   issues: ProjectManagerRecord[];
   projects: ProjectManagerRecord[];
   reviews: ProjectManagerRecord[];
@@ -46,9 +46,9 @@ export function RoadmapStatistics({ records }: { records: WorkflowRecords }) {
     },
     {
       color: "var(--chart-4)",
-      count: records.activities.length,
-      label: "Activities",
-      percentage: percentage(records.activities.length, all.length)
+      count: records.actions.length,
+      label: "Actions",
+      percentage: percentage(records.actions.length, all.length)
     },
     {
       color: "var(--chart-5)",
@@ -73,7 +73,7 @@ export function RoadmapStatistics({ records }: { records: WorkflowRecords }) {
     <aside className="rounded-md border bg-card p-4 shadow-sm xl:sticky xl:top-4">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Initiative performance</h2>
+          <h2 className="font-semibold">Module performance</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             {all.length} work items · {completed} completed
           </p>
@@ -137,13 +137,13 @@ function DeliveryHierarchy({
       <div className="mb-4">
         <h3 className="font-semibold">Delivery hierarchy</h3>
         <p className="text-sm text-muted-foreground">
-          Trace the selected initiative through its linked tasks, activities, and reviews.
+          Trace the selected module through its linked tasks, actions, and reviews.
         </p>
       </div>
       <WorkspaceTablePanel>
         <div className="overflow-x-auto">
           <table
-            aria-label="Selected initiative delivery hierarchy"
+            aria-label="Selected module delivery hierarchy"
             className="w-full min-w-[720px] table-fixed border-collapse text-sm"
           >
             <thead>
@@ -153,7 +153,7 @@ function DeliveryHierarchy({
                 </WorkspaceTableHeaderCell>
                 <WorkspaceTableHeaderCell className="w-1/3 border">Task</WorkspaceTableHeaderCell>
                 <WorkspaceTableHeaderCell className="w-1/3 border">
-                  Activity
+                  Action
                 </WorkspaceTableHeaderCell>
                 <WorkspaceTableHeaderCell className="w-1/3 border">Review</WorkspaceTableHeaderCell>
               </tr>
@@ -172,7 +172,7 @@ function DeliveryHierarchy({
                   />
                   <HierarchyCell
                     cell={row.activity}
-                    emptyLabel="No activities"
+                    emptyLabel="No actions"
                     onEditRecord={onEditRecord}
                     onAgentRecord={onAgentRecord}
                   />
@@ -188,7 +188,7 @@ function DeliveryHierarchy({
           </table>
         </div>
         {!rows.length ? (
-          <WorkspaceTableEmptyState>No initiative workflow found.</WorkspaceTableEmptyState>
+          <WorkspaceTableEmptyState>No module workflow found.</WorkspaceTableEmptyState>
         ) : null}
       </WorkspaceTablePanel>
     </div>
@@ -220,17 +220,17 @@ function buildHierarchyRows(records: WorkflowRecords) {
     }
     for (const task of tasks) {
       const taskStart = rows.length;
-      const activities = hierarchyOrder(
-        records.activities.filter((activity) => belongsTo(activity, task))
+      const actions = hierarchyOrder(
+        records.actions.filter((action) => belongsTo(action, task))
       );
-      if (!activities.length) {
+      if (!actions.length) {
         rows.push({
           activity: null,
           key: `${issue.id}:${task.id}:no-activity`,
           review: null
         });
       }
-      for (const activity of activities) {
+      for (const activity of actions) {
         const activityStart = rows.length;
         const reviews = hierarchyOrder(
           records.reviews.filter((review) => belongsTo(review, activity))
@@ -350,7 +350,7 @@ function Gantt({
         <thead>
           <tr>
             <WorkspaceTableHeaderCell className="w-72">Work item</WorkspaceTableHeaderCell>
-            <WorkspaceTableHeaderCell>{dayCount}-day initiative schedule</WorkspaceTableHeaderCell>
+            <WorkspaceTableHeaderCell>{dayCount}-day module schedule</WorkspaceTableHeaderCell>
           </tr>
         </thead>
         <tbody>
@@ -459,7 +459,7 @@ function ReviewStatus({
           </tbody>
         </table>
         {!records.length ? (
-          <WorkspaceTableEmptyState>No initiative reviews found.</WorkspaceTableEmptyState>
+          <WorkspaceTableEmptyState>No module reviews found.</WorkspaceTableEmptyState>
         ) : null}
       </WorkspaceTablePanel>
     </div>
@@ -640,12 +640,12 @@ function flatten(records: WorkflowRecords) {
     ...records.projects,
     ...records.issues,
     ...records.tasks,
-    ...records.activities,
+    ...records.actions,
     ...records.reviews
   ];
 }
 function issueChildren(records: WorkflowRecords) {
-  return [...records.tasks, ...records.activities, ...records.reviews];
+  return [...records.tasks, ...records.actions, ...records.reviews];
 }
 function workDate(record: ProjectManagerRecord) {
   return record.dueDate || record.updatedAt || record.createdAt;
@@ -704,7 +704,7 @@ function tone(status: string): "danger" | "info" | "success" | "warning" {
 function KindBadge({ kind }: { kind: string }) {
   return (
     <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-      {kind === "issue" ? "initiative" : kind}
+      {kind === "issue" ? "module" : kind === "activity" ? "action" : kind}
     </span>
   );
 }

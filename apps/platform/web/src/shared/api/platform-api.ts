@@ -157,3 +157,9 @@ export async function logout(): Promise<void> {
   } catch {}
   clearToken();
 }
+
+export function createMobilePairing() {
+  return apiPost<{ code: string; expiresAt: string; pairingUrl: string; payload: string }>(
+    "/auth/mobile-pairing"
+  );
+}

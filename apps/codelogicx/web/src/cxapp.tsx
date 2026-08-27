@@ -5,6 +5,8 @@ import {
   GitBranchIcon,
   LayoutDashboardIcon,
   LightbulbIcon,
+  ListTodoIcon,
+  MessagesSquareIcon,
   WrenchIcon
 } from "lucide-react";
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
@@ -37,6 +39,11 @@ const workspaces = Object.freeze([
   workspace("ideas", "Ideas", "Work", () =>
     import("./modules/ideas").then((module) => ({
       default: module.IdeasWorkspace
+    }))
+  ),
+  workspace("messenger", "Messenger", "Work", () =>
+    import("./modules/messaging").then((module) => ({
+      default: module.MessagingWorkspace
     }))
   ),
   workspace("apps", "App Desk", "System", () =>
@@ -100,14 +107,10 @@ const workspaces = Object.freeze([
   workspace("projects", "Projects", "Work", () =>
     Promise.all([
       import("./modules/work-automation"),
-      import("./modules/work-hub"),
-      import("./modules/sync")
-    ]).then(([work, hub, sync]) => ({
+      import("./modules/work-hub")
+    ]).then(([work, hub]) => ({
       default: () => (
         <hub.WorkShell current="Projects">
-          <div className="flex justify-end border-b px-5 py-3 lg:px-8">
-            <sync.ProjectSyncButton />
-          </div>
           <work.WorkAutomationWorkspace />
         </hub.WorkShell>
       )
@@ -225,10 +228,22 @@ export const codelogicxWebBundle = Object.freeze({
         url: "/app/codelogicx/ideas"
       },
       {
+        icon: MessagesSquareIcon,
+        isActive: activeWorkspaceId === "messenger",
+        title: "Messenger",
+        url: "/app/codelogicx/messenger"
+      },
+      {
         icon: FolderKanbanIcon,
         isActive: activeWorkspaceId === "projects",
         title: "Project",
         url: "/app/codelogicx/projects"
+      },
+      {
+        icon: ListTodoIcon,
+        isActive: activeWorkspaceId === "tasks",
+        title: "Todos",
+        url: "/app/codelogicx/tasks"
       }
     ];
   },

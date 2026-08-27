@@ -166,8 +166,8 @@ export function TaskManagerWorkspace() {
   const pageTodos = todos.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
   return (
     <WorkspacePage
-      title="Task Manager"
-      description="Plan and complete Super Admin Todos in a lightweight workspace."
+      title="Todo's"
+      description="Small steps, completed consistently, create remarkable progress."
       actions={
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => void query.refetch()}>
@@ -486,7 +486,7 @@ function TodoForm({
     setForm((current) => ({ ...current, [key]: next }));
   return (
     <WorkspaceUpsertDialog
-      className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"
+      className="max-h-[90vh] overflow-y-auto sm:max-w-6xl"
       description="Capture a Super Admin task with its status and priority."
       open
       onClose={onCancel}
@@ -499,67 +499,75 @@ function TodoForm({
           onSave(form);
         }}
       >
-        <WorkspaceFormGrid columns={2}>
-          <WorkspaceFormField label="Todo title" required>
-            <Input
-              required
-              value={form.title}
-              onChange={(event) => patch("title", event.target.value)}
+        <WorkspaceFormGrid
+          className="items-start md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]"
+          columns={2}
+        >
+          <div className="grid gap-5">
+            <WorkspaceFormField label="Todo title" required>
+              <Input
+                required
+                value={form.title}
+                onChange={(event) => patch("title", event.target.value)}
+              />
+            </WorkspaceFormField>
+            <WorkspaceFormField label="Description">
+              <WorkspaceMinimalEditor
+                className="[&_.ProseMirror]:min-h-[260px]"
+                content={form.description ?? ""}
+                onChange={(value) => patch("description", value)}
+              />
+            </WorkspaceFormField>
+          </div>
+          <div className="grid gap-5">
+            <WorkspaceFormField label="Due date">
+              <WorkspaceDatePicker
+                value={form.dueDate ?? ""}
+                onValueChange={(value) => patch("dueDate", value)}
+              />
+            </WorkspaceFormField>
+            <TodoLookupField
+              kind="category"
+              label="Category"
+              lookups={lookups}
+              value={String(form.category ?? "work")}
+              onCreate={onCreateLookup}
+              onValueChange={(next) => patch("category", next)}
             />
-          </WorkspaceFormField>
-          <WorkspaceFormField label="Due date">
-            <WorkspaceDatePicker
-              value={form.dueDate ?? ""}
-              onValueChange={(value) => patch("dueDate", value)}
+            <WorkspaceFormField label="Project">
+              <WorkspaceLookup
+                createMode="none"
+                options={projectOptions(projects)}
+                placeholder="Select project"
+                value={form.projectId ?? ""}
+                onValueChange={(next) => patch("projectId", next)}
+              />
+            </WorkspaceFormField>
+            <TodoLookupField
+              kind="group"
+              label="Group / Client"
+              lookups={lookups}
+              value={form.groupName ?? ""}
+              onCreate={onCreateLookup}
+              onValueChange={(next, option) => patch("groupName", option?.label ?? next)}
             />
-          </WorkspaceFormField>
-          <TodoLookupField
-            kind="category"
-            label="Category"
-            lookups={lookups}
-            value={String(form.category ?? "work")}
-            onCreate={onCreateLookup}
-            onValueChange={(next) => patch("category", next)}
-          />
-          <WorkspaceFormField label="Project">
-            <WorkspaceLookup
-              createMode="none"
-              options={projectOptions(projects)}
-              placeholder="Select project"
-              value={form.projectId ?? ""}
-              onValueChange={(next) => patch("projectId", next)}
+            <TodoLookupField
+              kind="status"
+              label="Status"
+              lookups={lookups}
+              value={String(form.status ?? "open")}
+              onCreate={onCreateLookup}
+              onValueChange={(next) => patch("status", next)}
             />
-          </WorkspaceFormField>
-          <TodoLookupField
-            kind="group"
-            label="Group / Client"
-            lookups={lookups}
-            value={form.groupName ?? ""}
-            onCreate={onCreateLookup}
-            onValueChange={(next, option) => patch("groupName", option?.label ?? next)}
-          />
-          <TodoLookupField
-            kind="status"
-            label="Status"
-            lookups={lookups}
-            value={String(form.status ?? "open")}
-            onCreate={onCreateLookup}
-            onValueChange={(next) => patch("status", next)}
-          />
-          <TodoLookupField
-            kind="priority"
-            label="Priority"
-            lookups={lookups}
-            value={String(form.priority ?? "medium")}
-            onCreate={onCreateLookup}
-            onValueChange={(next) => patch("priority", next)}
-          />
-          <WorkspaceFormField className="md:col-span-2" label="Description">
-            <WorkspaceMinimalEditor
-              content={form.description ?? ""}
-              onChange={(value) => patch("description", value)}
+            <TodoLookupField
+              kind="priority"
+              label="Priority"
+              lookups={lookups}
+              value={String(form.priority ?? "medium")}
+              onCreate={onCreateLookup}
+              onValueChange={(next) => patch("priority", next)}
             />
-          </WorkspaceFormField>
+          </div>
         </WorkspaceFormGrid>
         <WorkspaceFormFooter
           className="mt-6 border-t pt-4"

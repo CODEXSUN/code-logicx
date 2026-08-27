@@ -6,6 +6,31 @@ export const ideasMigration = {
   key: "codelogicx.ideas.sql.v1"
 } as const;
 
+export const ideasAttachmentStorageMigration = {
+  description: "Store new idea images on disk while retaining legacy database images.",
+  key: "codelogicx.ideas.attachments.storage-key.v2"
+} as const;
+
+export const ideasColorsMigration = {
+  description: "Persist display colors for idea categories and statuses.",
+  key: "codelogicx.ideas.colors.v3"
+} as const;
+
+export const ideasVisibilityMigration = {
+  description: "Add author-scoped private visibility to project ideas.",
+  key: "codelogicx.ideas.visibility.v4"
+} as const;
+
+export const ideasPrivateByDefaultMigration = {
+  description: "Make newly inserted project ideas private unless explicitly shared later.",
+  key: "codelogicx.ideas.private-default.v5"
+} as const;
+
+export const ideasAssigneesMigration = {
+  description: "Persist verified multi-user assignments for project ideas.",
+  key: "codelogicx.ideas.assignees.v6"
+} as const;
+
 export async function migrateIdeasModule(database: Kysely<CodeLogicXDatabase>) {
   await sql`CREATE TABLE IF NOT EXISTS codelogicx_ideas (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, uuid CHAR(8) NOT NULL, title VARCHAR(240) NOT NULL,
@@ -54,4 +79,41 @@ export async function migrateIdeasModule(database: Kysely<CodeLogicXDatabase>) {
     UNIQUE KEY uq_codelogicx_idea_drawings_uuid (uuid), UNIQUE KEY uq_codelogicx_idea_drawings_idea (idea_uuid)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`.execute(database);
   return ideasMigration;
+}
+
+export async function migrateIdeaAttachmentStorage(database: Kysely<CodeLogicXDatabase>) {
+  await sql`ALTER TABLE codelogicx_idea_attachments
+    ADD COLUMN IF NOT EXISTS storage_key VARCHAR(500) NULL AFTER data_base64`.execute(database);
+  return ideasAttachmentStorageMigration;
+}
+
+export async function migrateIdeaColors(database: Kysely<CodeLogicXDatabase>) {
+  await sql`ALTER TABLE codelogicx_ideas
+    ADD COLUMN IF NOT EXISTS category_color CHAR(7) NOT NULL DEFAULT '#2563eb' AFTER category,
+    ADD COLUMN IF NOT EXISTS status_color CHAR(7) NOT NULL DEFAULT '#16a34a' AFTER status`.execute(
+    database
+  );
+  return ideasColorsMigration;
+}
+
+export async function migrateIdeaVisibility(database: Kysely<CodeLogicXDatabase>) {
+  await sql`ALTER TABLE codelogicx_ideas
+    ADD COLUMN IF NOT EXISTS visibility VARCHAR(12) NOT NULL DEFAULT 'public' AFTER status_color`.execute(
+    database
+  );
+  return ideasVisibilityMigration;
+}
+
+export async function migrateIdeasPrivateByDefault(database: Kysely<CodeLogicXDatabase>) {
+  await sql`ALTER TABLE codelogicx_ideas
+    MODIFY COLUMN visibility VARCHAR(12) NOT NULL DEFAULT 'private'`.execute(database);
+  return ideasPrivateByDefaultMigration;
+}
+
+export async function migrateIdeaAssignees(database: Kysely<CodeLogicXDatabase>) {
+  await sql`ALTER TABLE codelogicx_ideas
+    ADD COLUMN IF NOT EXISTS assignee_uuids_json TEXT NOT NULL DEFAULT '[]' AFTER visibility`.execute(
+    database
+  );
+  return ideasAssigneesMigration;
 }

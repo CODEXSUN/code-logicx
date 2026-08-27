@@ -14,10 +14,17 @@ import { telegramSupportModule } from "./modules/telegram-support/index.js";
 import { honeyModule } from "./modules/honey/index.js";
 import { notificationModule } from "./modules/notification/index.js";
 import { ideasModule } from "./modules/ideas/index.js";
-import { runWithCodeLogicXActor, type CodeLogicXActor } from "./request-context.js";
+import { messagingModule } from "./modules/messaging/index.js";
+import {
+  runWithCodeLogicXActor,
+  runWithCodeLogicXUserDirectory,
+  type CodeLogicXActor,
+  type CodeLogicXUserDirectory
+} from "./request-context.js";
 
 export const codelogicxApiModuleKeys = [
   ideasModule.key,
+  messagingModule.key,
   projectManagerModule.key,
   taskManagerModule.key,
   githubDashboardModule.key,
@@ -33,6 +40,7 @@ export const codelogicxApiModuleKeys = [
 export type CodeLogicXHostRequestContext = {
   actor: CodeLogicXActor;
   database: Kysely<CodeLogicXDatabase>;
+  users: CodeLogicXUserDirectory;
 };
 
 export type CodeLogicXHostAdapter = {
@@ -40,7 +48,9 @@ export type CodeLogicXHostAdapter = {
     context: CodeLogicXHostRequestContext;
     request: FastifyRequest;
   }): Promise<void> | void;
-  resolve(request: FastifyRequest): Promise<CodeLogicXHostRequestContext> | CodeLogicXHostRequestContext;
+  resolve(
+    request: FastifyRequest
+  ): Promise<CodeLogicXHostRequestContext> | CodeLogicXHostRequestContext;
   resolveCloudSync?(
     request: FastifyRequest
   ): Promise<CodeLogicXHostRequestContext> | CodeLogicXHostRequestContext;
@@ -49,7 +59,10 @@ export type CodeLogicXHostAdapter = {
   ): Promise<CodeLogicXHostRequestContext> | CodeLogicXHostRequestContext;
 };
 
-export async function registerCodeLogicXApiForHost(app: FastifyInstance, adapter: CodeLogicXHostAdapter) {
+export async function registerCodeLogicXApiForHost(
+  app: FastifyInstance,
+  adapter: CodeLogicXHostAdapter
+) {
   await app.register(async (codelogicxApp) => {
     const contexts = new WeakMap<FastifyRequest, CodeLogicXHostRequestContext>();
     codelogicxApp.addHook("onRequest", (request, _reply, done) => {
@@ -62,7 +75,11 @@ export async function registerCodeLogicXApiForHost(app: FastifyInstance, adapter
       void Promise.resolve(resolve.call(adapter, request))
         .then((context) => {
           contexts.set(request, context);
-          runWithCodeLogicXDatabase(context.database, () => runWithCodeLogicXActor(context.actor, done));
+          runWithCodeLogicXDatabase(context.database, () =>
+            runWithCodeLogicXActor(context.actor, () =>
+              runWithCodeLogicXUserDirectory(context.users, done)
+            )
+          );
         })
         .catch((error: unknown) => done(error as Error));
     });
@@ -74,6 +91,7 @@ export async function registerCodeLogicXApiForHost(app: FastifyInstance, adapter
     });
     await projectManagerModule.register({ app: codelogicxApp });
     await ideasModule.register({ app: codelogicxApp });
+    await messagingModule.register({ app: codelogicxApp });
     await taskManagerModule.register({ app: codelogicxApp });
     await githubDashboardModule.register({ app: codelogicxApp });
     await planningModule.register({ app: codelogicxApp });

@@ -28,7 +28,7 @@ const lookupInputSchema = z
 
 export async function registerTaskManagerRoutes(app: FastifyInstance) {
   app.get("/task-manager/todos", async (request) =>
-    ok(await service.list(scopeKey), { requestId: request.id })
+    ok(await service.list(scopeKey, actor(request)), { requestId: request.id })
   );
   app.get("/task-manager/lookups", async (request) =>
     ok(await service.listLookups(scopeKey), { requestId: request.id })

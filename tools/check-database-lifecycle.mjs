@@ -5,9 +5,13 @@ const root = resolve(import.meta.dirname, "..");
 const databaseFile = "apps/platform/api/src/database/platform-database.ts";
 const codelogicxDatabaseFile = "apps/codelogicx/api/src/database/codelogicx-database.ts";
 const schemaFile = "apps/platform/api/src/database/schema.ts";
+const addonDatabaseFile = "apps/platform/api/src/addons/addon-database.ts";
+const addonHostFile = "apps/platform/api/src/addons/addon-host.ts";
 const database = readFileSync(resolve(root, databaseFile), "utf8");
 const codelogicxDatabase = readFileSync(resolve(root, codelogicxDatabaseFile), "utf8");
 const schema = readFileSync(resolve(root, schemaFile), "utf8");
+const addonDatabase = readFileSync(resolve(root, addonDatabaseFile), "utf8");
+const addonHost = readFileSync(resolve(root, addonHostFile), "utf8");
 
 assertOrdered(databaseFile, database, [
   "migrateRoleModule(db)",
@@ -15,7 +19,8 @@ assertOrdered(databaseFile, database, [
   "migrateUserModule(db)",
   "migrateUserRoleModule(db)",
   "migrateRolePermissionModule(db)",
-  "migrateCodeLogicXDatabase(db as unknown as Kysely<CodeLogicXDatabase>)"
+  "migrateCodeLogicXDatabase(db as unknown as Kysely<CodeLogicXDatabase>)",
+  "migrateCodeLogicXAddonDatabases(db as unknown as Kysely<BlogsDatabase>)"
 ]);
 assertOrdered(databaseFile, database, [
   "seedRoleModule(db)",
@@ -53,8 +58,20 @@ if (declaredTables.join(",") !== expectedTables.join(",")) {
 if (!database.includes("platformDatabaseName()")) {
   throw new Error(`${databaseFile}: single database selection is missing`);
 }
+assertOrdered(addonDatabaseFile, addonDatabase, [
+  "migrateBlogsDatabase(database, runBlogMigrationBatch)",
+  "runFileManagerMigrations(fileManagerMigrations)"
+]);
+if (addonHost.includes("migrateBlogsDatabase(")) {
+  throw new Error(`${addonHostFile}: route registration must not own Blog migrations`);
+}
+if (!database.includes("await migratePlatformDatabase();\n  await seedPlatformDatabase();")) {
+  throw new Error(`${databaseFile}: all migrations must complete before platform seeds`);
+}
 
-console.info("Database lifecycle verified: Platform identity followed by CodeLogicX-owned modules.");
+console.info(
+  "Database lifecycle verified: Platform identity, CodeLogicX, Blog, File Manager, then seeds."
+);
 
 function assertOrdered(file, source, tokens) {
   let previous = -1;

@@ -14,8 +14,8 @@
 *.pid.lock
 *.seed
 
-# Root dependencies and build output
-/node_modules/
+# Dependencies and build output
+**/node_modules/
 /dist/
 /.turbo/
 /coverage/

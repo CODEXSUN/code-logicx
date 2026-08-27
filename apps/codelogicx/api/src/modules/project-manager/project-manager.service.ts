@@ -86,7 +86,11 @@ export class ProjectManagerService {
     if (await this.repository.itemKeyExists(kind, next.key, id)) {
       throw AppError.conflict(`${kind} key already exists.`);
     }
-    return this.repository.update(next, actorEmail);
+    const updated = await this.repository.update(next, actorEmail);
+    if (kind === "review" && current.status !== "completed" && next.status === "completed") {
+      await this.repository.completeReviewHierarchy(next, actorEmail);
+    }
+    return updated;
   }
 
   async deactivate(kind: ProjectManagerKind, id: string, actorEmail: string) {
@@ -532,7 +536,7 @@ function assertKind(kind: string): asserts kind is ProjectManagerKind {
 function assertAttachmentKind(kind: string): asserts kind is ProjectManagerAttachmentKind {
   if (!isAttachmentKind(kind)) {
     throw AppError.validation(
-      "Attachments are supported for projects, issues, tasks, activities, and reviews."
+      "Attachments are supported for projects, modules, tasks, actions, and reviews."
     );
   }
 }

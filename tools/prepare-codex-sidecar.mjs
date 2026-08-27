@@ -30,6 +30,12 @@ function copyOpenCodeBinary() {
     `opencode-${target}${executableSuffix}`
   );
   if (!existsSync(source) || statSync(source).size < 1_000_000) {
+    if (!process.env.CI && existsSync(destination) && statSync(destination).size > 1_000_000) {
+      console.warn(
+        `Using the existing OpenCode sidecar for ${target}; run npm install from the repository root to restore its package source.`
+      );
+      return;
+    }
     throw new Error("OpenCode CLI is unavailable. Run npm install from the repository root.");
   }
   mkdirSync(dirname(destination), { recursive: true });

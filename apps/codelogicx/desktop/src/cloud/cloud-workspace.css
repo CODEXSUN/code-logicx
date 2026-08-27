@@ -1,0 +1,511 @@
+.cloud-connect,
+.cloud-desk {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+}
+.cloud-connect {
+  display: grid;
+  grid-template-columns: minmax(340px, 1fr) minmax(420px, 520px);
+  align-items: center;
+  gap: 8vw;
+  padding: clamp(36px, 7vw, 96px);
+}
+.cloud-connect-copy {
+  max-width: 620px;
+}
+.cloud-mark {
+  display: inline-grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+  color: var(--primary);
+}
+.cloud-connect-copy > p,
+.cloud-page > header > p {
+  padding-top: 24px;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cloud-connect-copy h1 {
+  max-width: 560px;
+  margin: 10px 0 18px;
+  font-size: clamp(36px, 4vw, 58px);
+  line-height: 1.03;
+  letter-spacing: -0.04em;
+}
+.cloud-connect-copy > span {
+  display: block;
+  max-width: 570px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.cloud-connect-copy ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 24px;
+  padding: 32px 0 0;
+  list-style: none;
+}
+.cloud-connect-copy li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.cloud-connect-form {
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: 0 18px 50px rgb(15 23 42 / 8%);
+}
+.cloud-connect-form > header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.cloud-connect-form > header > span {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--secondary);
+}
+.cloud-connect-form h2,
+.cloud-connect-form p {
+  margin: 0;
+}
+.cloud-connect-form header p,
+.cloud-fields > p {
+  padding-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.cloud-connect-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 26px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--secondary);
+}
+.cloud-connect-modes button {
+  height: 36px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+}
+.cloud-connect-modes button[aria-selected="true"] {
+  background: var(--card);
+  box-shadow: 0 1px 4px rgb(15 23 42 / 10%);
+  font-weight: 650;
+}
+.cloud-fields {
+  display: grid;
+  gap: 18px;
+  padding-top: 24px;
+}
+.cloud-fields label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.cloud-fields input,
+.cloud-fields textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--input);
+  border-radius: 8px;
+  outline: none;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+.cloud-fields input:focus,
+.cloud-fields textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+.cloud-fields .cloud-code-input {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+}
+.cloud-primary,
+.cloud-secondary {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 650;
+}
+.cloud-primary {
+  border: 1px solid var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}
+.cloud-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.cloud-secondary {
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+.cloud-error {
+  padding-top: 16px;
+  color: #b42318;
+  font-size: 13px;
+}
+.cloud-desk {
+  display: grid;
+  height: 100%;
+  grid-template-columns: 236px minmax(0, 1fr);
+}
+.cloud-desk > aside {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--card);
+}
+.cloud-desk > aside > header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 22px 20px;
+}
+.cloud-desk > aside .cloud-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+.cloud-desk > aside header div,
+.cloud-desk > aside footer p {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.cloud-desk > aside small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cloud-desk > aside nav {
+  display: grid;
+  gap: 4px;
+  padding: 14px 12px;
+}
+.cloud-desk > aside nav button,
+.cloud-desk > aside footer > button {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 11px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+}
+.cloud-desk > aside nav button:hover,
+.cloud-desk > aside nav button.active {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+.cloud-desk > aside nav button.active {
+  font-weight: 650;
+}
+.cloud-desk > aside footer {
+  display: grid;
+  gap: 4px;
+  margin-top: auto;
+  padding: 14px 12px;
+  border-top: 1px solid var(--border);
+}
+.cloud-desk > aside footer > div {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 12px;
+}
+.cloud-desk > aside footer > div > span {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.cloud-main {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: 48px minmax(0, 1fr);
+}
+.cloud-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 12px;
+}
+.cloud-toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cloud-toolbar button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+}
+.cloud-toolbar button:hover {
+  background: var(--secondary);
+}
+.cloud-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+}
+.cloud-scroll {
+  min-height: 0;
+  overflow: auto;
+}
+.cloud-page {
+  width: min(1160px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 46px 0 72px;
+}
+.cloud-page > header h1 {
+  margin: 5px 0 8px;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+}
+.cloud-page > header > span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.cloud-dashboard > header {
+  text-align: center;
+}
+.cloud-dashboard > header h1 {
+  font-size: 36px;
+}
+.cloud-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 46px;
+  border-block: 1px solid var(--border);
+}
+.cloud-metrics button {
+  display: grid;
+  gap: 6px;
+  padding: 22px 20px;
+  border: 0;
+  border-right: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.cloud-metrics button:last-child {
+  border-right: 0;
+}
+.cloud-metrics strong {
+  font-size: 24px;
+}
+.cloud-metrics span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.cloud-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px 44px;
+  padding-top: 42px;
+}
+.cloud-dashboard-block > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+}
+.cloud-dashboard-block > header > span,
+.cloud-list-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--secondary);
+  color: var(--muted);
+}
+.cloud-dashboard-block h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.cloud-dashboard-block > div {
+  border-top: 1px solid var(--border);
+}
+.cloud-dashboard-block p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0;
+  padding: 13px 2px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.cloud-dashboard-block p strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cloud-dashboard-block p span {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+.cloud-list > section {
+  margin-top: 34px;
+  border-top: 1px solid var(--border);
+}
+.cloud-list article {
+  display: flex;
+  gap: 16px;
+  padding: 20px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.cloud-list article > div {
+  min-width: 0;
+  flex: 1;
+}
+.cloud-list article header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.cloud-list article h2 {
+  overflow: hidden;
+  margin: 0;
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cloud-list article header span {
+  flex: 0 0 auto;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: capitalize;
+}
+.cloud-list article p {
+  overflow: hidden;
+  margin: 6px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cloud-list article small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.cloud-empty,
+.cloud-empty-page {
+  color: var(--muted);
+}
+.cloud-empty-page {
+  margin-top: 34px;
+  padding: 64px 24px;
+  border-block: 1px solid var(--border);
+  text-align: center;
+}
+.cloud-state {
+  display: grid;
+  height: 100%;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 40px;
+  color: var(--muted);
+  text-align: center;
+}
+.cloud-state strong {
+  color: var(--foreground);
+  font-size: 16px;
+}
+.cloud-state button {
+  margin-top: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--card);
+  cursor: pointer;
+}
+@media (max-width: 980px) {
+  .cloud-connect {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+  .cloud-connect-copy {
+    display: none;
+  }
+  .cloud-desk {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+  .cloud-desk > aside header div,
+  .cloud-desk > aside nav span,
+  .cloud-desk > aside footer p,
+  .cloud-desk > aside footer button {
+    display: none;
+  }
+  .cloud-desk > aside > header,
+  .cloud-desk > aside nav {
+    justify-content: center;
+  }
+  .cloud-desk > aside nav button {
+    justify-content: center;
+  }
+  .cloud-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

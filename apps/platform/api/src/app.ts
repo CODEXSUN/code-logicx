@@ -1,12 +1,16 @@
-import { createApiApp, registerHealthRoute, registerRequestLogging } from "@codelogicx/framework/api";
+import {
+  createApiApp,
+  registerHealthRoute,
+  registerRequestLogging
+} from "@codelogicx/framework/api";
 import { AppError } from "@codelogicx/framework/errors";
 import type { HealthCheck } from "@codelogicx/framework/health";
 import { registerModules } from "@codelogicx/framework/modules";
 import {
-  bootstrapCodeLogicXDatabase,
   configureNotificationRuntime,
   codelogicxApiModuleKeys,
   registerCodeLogicXApiForHost,
+  subscribeMessagingEvents,
   subscribeNotificationEvents
 } from "@codelogicx/codelogicx-api";
 import type { CodeLogicXDatabase } from "@codelogicx/codelogicx-api";
@@ -22,7 +26,9 @@ import { permissionModule } from "./modules/permission/index.js";
 import { rolePermissionModule } from "./modules/role-permission/index.js";
 import { roleModule } from "./modules/role/index.js";
 import { userRoleModule } from "./modules/user-role/index.js";
-import { userModule } from "./modules/user/index.js";
+import { userModule, userReferenceContract } from "./modules/user/index.js";
+import { registerCodeLogicXAddons } from "./addons/addon-host.js";
+import { closeFileManagerDatabase, fileManagerApiModuleKeys } from "./addons/file-manager-host.js";
 
 const modules = [userModule, roleModule, permissionModule, userRoleModule, rolePermissionModule];
 
@@ -30,7 +36,6 @@ export async function createApp() {
   console.info("[codelogicx.boot] bootstrap started");
   await bootstrapPlatformDatabase();
   const database = getPlatformDatabase() as unknown as Kysely<CodeLogicXDatabase>;
-  await bootstrapCodeLogicXDatabase(database);
   const closeNotifications = await configureNotificationRuntime({
     database,
     email: {
@@ -50,17 +55,23 @@ export async function createApp() {
     cookieSecret: env.JWT_SECRET,
     corsOrigins: platformWebOrigins(),
     environment: env.NODE_ENV,
-    shutdownHooks: [closeNotifications, closePlatformDatabase],
+    shutdownHooks: [closeNotifications, closeFileManagerDatabase, closePlatformDatabase],
     tenantContext: false
   });
   registerNotificationSocket(app);
+  registerMessagingSocket(app);
   const healthChecks: HealthCheck[] = [
     {
       name: "codelogicx-api",
       check: () => ({
         details: {
           database: env.DB_NAME,
-          modules: [...modules.map((module) => module.key), ...codelogicxApiModuleKeys],
+          modules: [
+            ...modules.map((module) => module.key),
+            ...codelogicxApiModuleKeys,
+            ...fileManagerApiModuleKeys,
+            "blogs"
+          ],
           runtime: "single-client"
         },
         status: "ok"
@@ -79,15 +90,27 @@ export async function createApp() {
       onReady: (module) => console.info(`[module.ready] ${module.key}`)
     }
   );
+  await registerCodeLogicXAddons(app);
   await app.register(
     async (codelogicxApp) =>
       registerCodeLogicXApiForHost(codelogicxApp, {
         async authorize({ request }) {
-          if (request.url.includes("/sync/cloud/") || request.url.includes("/telegram/webhook"))
+          if (
+            request.url.includes("/sync/cloud/") ||
+            request.url.includes("/telegram/webhook") ||
+            isIdeaImageRequest(request)
+          )
             return;
           await identityContext(request).authorize(codelogicxPermission(request));
         },
         async resolve(request) {
+          if (isIdeaImageRequest(request)) {
+            return {
+              actor: { id: "codelogicx-idea-image", permissions: [], roles: ["system"] },
+              database: getPlatformDatabase() as unknown as Kysely<CodeLogicXDatabase>,
+              users: userReferenceContract(getPlatformDatabase())
+            };
+          }
           const context = identityContext(request);
           const actor = await context.actorUser();
           if (!actor) throw AppError.unauthorized("Session expired. Please sign in again.");
@@ -98,7 +121,8 @@ export async function createApp() {
               permissions: [],
               roles: [actor.role]
             },
-            database: context.database as unknown as Kysely<CodeLogicXDatabase>
+            database: context.database as unknown as Kysely<CodeLogicXDatabase>,
+            users: userReferenceContract(context.database)
           };
         },
         resolveCloudSync() {
@@ -108,13 +132,15 @@ export async function createApp() {
               permissions: [],
               roles: ["system"]
             },
-            database: getPlatformDatabase() as unknown as Kysely<CodeLogicXDatabase>
+            database: getPlatformDatabase() as unknown as Kysely<CodeLogicXDatabase>,
+            users: userReferenceContract(getPlatformDatabase())
           };
         },
         resolvePublicWebhook() {
           return {
             actor: { id: "telegram-webhook", permissions: [], roles: ["system"] },
-            database: getPlatformDatabase() as unknown as Kysely<CodeLogicXDatabase>
+            database: getPlatformDatabase() as unknown as Kysely<CodeLogicXDatabase>,
+            users: userReferenceContract(getPlatformDatabase())
           };
         }
       }),
@@ -123,6 +149,15 @@ export async function createApp() {
   console.info("[codelogicx.boot] bootstrap completed");
 
   return app;
+}
+
+function isIdeaImageRequest(request: { method: string; url: string }) {
+  return (
+    request.method === "GET" &&
+    /(?:^|\/api\/codelogicx)\/ideas\/[a-f0-9]{8}\/attachments\/[a-f0-9]{8}\/image(?:\?|$)/u.test(
+      request.url
+    )
+  );
 }
 
 function registerNotificationSocket(app: Awaited<ReturnType<typeof createApiApp>>) {
@@ -150,8 +185,44 @@ function registerNotificationSocket(app: Awaited<ReturnType<typeof createApiApp>
   });
 }
 
+function registerMessagingSocket(app: Awaited<ReturnType<typeof createApiApp>>) {
+  const io = new SocketServer(app.server, {
+    cors: { credentials: true, origin: platformWebOrigins() },
+    path: "/api/codelogicx/messaging/socket.io"
+  });
+  io.use((socket, next) => {
+    const authorization = String(
+      socket.handshake.auth.token ?? socket.handshake.headers.authorization ?? ""
+    );
+    const actor = verifyAuthToken(authorization.replace(/^Bearer\s+/iu, ""));
+    if (!actor) return next(new Error("Messenger socket authentication failed."));
+    socket.data.actorId = actor.userId;
+    socket.join(`messaging:${actor.userId}`);
+    next();
+  });
+  const unsubscribe = subscribeMessagingEvents((event) => {
+    for (const actorId of event.memberIds) {
+      if (event.kind === "message") {
+        io.to(`messaging:${actorId}`).emit("message.created", event.message);
+      } else {
+        io.to(`messaging:${actorId}`).emit("conversation.read", event);
+      }
+    }
+  });
+  app.addHook("onClose", async () => {
+    unsubscribe();
+    await io.close();
+  });
+}
+
 function platformWebOrigins() {
-  const configuredOrigins = [env.PLATFORM_WEB_ORIGIN, ...env.PLATFORM_WEB_ORIGINS.split(",")];
+  const configuredOrigins = [
+    env.PLATFORM_WEB_ORIGIN,
+    ...env.PLATFORM_WEB_ORIGINS.split(","),
+    "http://tauri.localhost",
+    "https://tauri.localhost",
+    "tauri://localhost"
+  ];
   if (env.NODE_ENV !== "production") {
     configuredOrigins.push(
       `http://127.0.0.1:${env.PLATFORM_WEB_PORT}`,
@@ -173,6 +244,7 @@ function platformWebOrigins() {
 function codelogicxPermission(request: { method: string; url: string }) {
   const action = request.method === "GET" || request.method === "HEAD" ? "view" : "manage";
   if (request.url.includes("/task-manager/")) return `codelogicx.task-manager.${action}`;
+  if (request.url.includes("/messaging/")) return `codelogicx.messaging.${action}`;
   if (request.url.includes("/planning/")) return `codelogicx.planning.${action}`;
   if (request.url.includes("/github-dashboard/")) return "codelogicx.github-dashboard.view";
   if (request.url.includes("/orchestration/")) return `codelogicx.orchestration.${action}`;

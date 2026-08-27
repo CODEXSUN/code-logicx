@@ -3,6 +3,7 @@ import { resolveHoneyActions } from "./honey-actions.js";
 import { honeyRepository } from "./honey.repository.js";
 import { honeyBusinessKnowledge } from "./honey-business-knowledge.js";
 import { notificationPublisher } from "../notification/index.js";
+import { honeyWorkerRegistry } from "./honey.worker.js";
 
 export class HoneyService {
   async memory(actorId: string) {
@@ -92,14 +93,23 @@ export class HoneyService {
 
   async chat(
     input: { context: HoneyPageContext; message: string; threadId?: string | null | undefined },
-    actorId: string
+    actor: { email?: string | undefined; id: string }
   ) {
+    const actorId = actor.id;
     const thread = input.threadId
       ? await honeyRepository.find(input.threadId, actorId)
       : await honeyRepository.create(actorId, input.message);
     await honeyRepository.addMessage(thread.uuid, actorId, "user", input.message, input.context);
-    await honeyRepository.rememberCandidate(actorId, thread.uuid, input.message);
+    await honeyRepository.rememberCandidate(actorId, thread.uuid, input.message, input.context);
     try {
+      const workerResult = await honeyWorkerRegistry.execute(input.message, {
+        actorEmail: actor.email?.trim() || actor.id,
+        page: input.context
+      });
+      if (workerResult) {
+        await honeyRepository.addMessage(thread.uuid, actorId, "assistant", workerResult.message);
+        return this.conversation(thread.uuid, actorId);
+      }
       const memory = await honeyRepository.approvedMemory(actorId);
       const result = await codexAssistantGateway.ask({
         message: `${input.message}\n\nCurrent page context:\n${contextSummary(input.context)}`,
@@ -174,5 +184,5 @@ function honeySystemPrompt(memory: Array<{ content: string; kind: string }>) {
   const approved = memory.length
     ? `\nApproved business memory:\n${memory.map((item) => `- [${item.kind}] ${item.content}`).join("\n")}`
     : "";
-  return `You are Honey, a concise business-automation assistant. Honey is your permanent identity even if the underlying model or agent changes. Stay inside these boundaries: explain, plan, summarize, organize, and suggest safe business workflows. Never execute code, change files, deploy, purchase, send external messages, reveal secrets, or claim authority outside Honey. Use only approved memory; never treat conversation text as learned truth without review. Answer in plain language, under 90 words when possible, and offer one clear next step.\n\n${honeyBusinessKnowledge}${approved}`;
+  return `You are Honey, a concise business-automation assistant. Honey is your permanent identity even if the underlying model or agent changes. You may read data and perform low-risk actions only through Honey's registered workers. Never invent an action result. Never execute code, change files, deploy, purchase, send external messages, reveal secrets, or claim authority outside Honey. Use only approved memory; never treat conversation text as learned truth without review. Answer in plain language, under 90 words when possible, and offer one clear next step.\n\n${honeyBusinessKnowledge}${approved}`;
 }

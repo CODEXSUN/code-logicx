@@ -9,23 +9,19 @@ import type {
   TodoStatus,
   TodoUpdateInput
 } from "./task-manager.types.js";
-import { TelegramNotificationService } from "../telegram-support/telegram-notification.service.js";
 
 const lookupKinds: TodoLookupKind[] = ["category", "group", "priority", "status"];
 
 export class TaskManagerService {
-  constructor(
-    private readonly repository = new TaskManagerRepository(),
-    private readonly notifications = new TelegramNotificationService()
-  ) {}
+  constructor(private readonly repository = new TaskManagerRepository()) {}
 
-  list(scopeKey: string) {
-    return this.repository.list(scopeKey);
+  list(scopeKey: string, actorEmail: string) {
+    return this.repository.list(scopeKey, actorEmail);
   }
 
   async create(scopeKey: string, input: TodoInput, actorEmail: string) {
     const title = requiredTitle(input.title);
-    const records = await this.repository.list(scopeKey);
+    const records = await this.repository.list(scopeKey, actorEmail);
     const timestamp = now();
     const record: Todo = {
       category: input.category ?? "work",
@@ -41,13 +37,11 @@ export class TaskManagerService {
       title,
       updatedAt: timestamp
     };
-    const created = await this.repository.create(scopeKey, record, actorEmail);
-    await this.notifications.taskChanged("created", created);
-    return created;
+    return this.repository.create(scopeKey, record, actorEmail);
   }
 
   async update(scopeKey: string, id: string, input: TodoUpdateInput, actorEmail: string) {
-    const current = await this.repository.find(scopeKey, id);
+    const current = await this.repository.find(scopeKey, id, actorEmail);
     if (!current) throw AppError.notFound("Todo was not found.");
     const next: Todo = {
       ...current,
@@ -61,37 +55,28 @@ export class TaskManagerService {
       title: requiredTitle(input.title ?? current.title),
       updatedAt: now()
     };
-    const updated = await this.repository.update(scopeKey, next, actorEmail);
-    await this.notifications.taskChanged("updated", updated);
-    return updated;
+    return this.repository.update(scopeKey, next, actorEmail);
   }
 
   async status(scopeKey: string, id: string, status: TodoStatus, actorEmail: string) {
-    const current = await this.repository.find(scopeKey, id);
+    const current = await this.repository.find(scopeKey, id, actorEmail);
     if (!current) throw AppError.notFound("Todo was not found.");
-    const updated = await this.repository.update(
+    return this.repository.update(
       scopeKey,
       { ...current, status, updatedAt: now() },
       actorEmail,
       "status-changed"
     );
-    await this.notifications.taskChanged(
-      status === "in-progress" ? "started" : "status changed",
-      updated
-    );
-    return updated;
   }
 
   async delete(scopeKey: string, id: string, actorEmail: string) {
-    const current = await this.repository.find(scopeKey, id);
+    const current = await this.repository.find(scopeKey, id, actorEmail);
     if (!current) throw AppError.notFound("Todo was not found.");
-    const deleted = await this.repository.delete(scopeKey, current, actorEmail);
-    await this.notifications.taskChanged("deleted", current);
-    return deleted;
+    return this.repository.delete(scopeKey, current, actorEmail);
   }
 
   async reorder(scopeKey: string, orderedIds: string[], actorEmail: string) {
-    const records = await this.repository.list(scopeKey);
+    const records = await this.repository.list(scopeKey, actorEmail);
     const known = new Set(records.map((record) => record.id));
     const ordered = orderedIds.filter((id) => known.has(id));
     const remaining = records.map((record) => record.id).filter((id) => !ordered.includes(id));

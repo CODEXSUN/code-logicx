@@ -1,8 +1,8 @@
-import { formatDistanceToNow } from "date-fns";
 import {
   ArchiveRestoreIcon,
   BanIcon,
   Clock3Icon,
+  FolderOpenIcon,
   LinkIcon,
   PencilIcon,
   Trash2Icon,
@@ -22,6 +22,7 @@ type ProjectCardListProps = {
   onDelete(project: ProjectManagerRecord): void;
   onEdit(project: ProjectManagerRecord): void;
   onOpen(project: ProjectManagerRecord): void;
+  onOpenWork(record: ProjectManagerRecord): void;
   onRestore(project: ProjectManagerRecord): void;
   onWhiteboards(project: ProjectManagerRecord): void;
 };
@@ -34,6 +35,7 @@ export function ProjectCardList({
   onDelete,
   onEdit,
   onOpen,
+  onOpenWork,
   onRestore,
   onWhiteboards,
 }: ProjectCardListProps) {
@@ -47,13 +49,13 @@ export function ProjectCardList({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-x-6 gap-y-7 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-x-6 gap-y-7 @3xl/main:grid-cols-2 @7xl/main:grid-cols-3">
       {projects.map((project) => {
         const summary = projectSummary(project, records);
         const visual = projectVisual(project);
         return (
           <article
-            className="group flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-card transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-1 hover:border-primary/35 hover:shadow-md"
+            className="group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-border/90 bg-card shadow-[0_8px_24px_-18px_rgba(15,23,42,0.65)] transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_14px_32px_-18px_rgba(15,23,42,0.72)]"
             key={project.id}
             role="link"
             tabIndex={0}
@@ -72,7 +74,7 @@ export function ProjectCardList({
               >
                 {visual.mark}
               </div>
-              <span className="font-mono text-xs font-medium text-foreground/70">{project.key}</span>
+              <span className="font-mono text-sm font-bold tracking-wide text-foreground/65">{project.key}</span>
               <div className="ml-auto rounded-full bg-background/90 p-0.5 shadow-sm backdrop-blur-sm">
                 <ProgressCircle value={summary.progress} />
               </div>
@@ -95,24 +97,38 @@ export function ProjectCardList({
                 </p>
               </div>
 
-              <div className="mt-4 rounded-lg bg-muted/45 px-3 py-2.5">
-                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                  <Clock3Icon className="size-3.5 shrink-0" />
-                  Latest work
+              <div className="mt-4 grid min-h-32 grid-cols-[minmax(0,1.15fr)_minmax(9rem,0.85fr)] overflow-hidden rounded-lg bg-muted/20">
+                <div className="flex min-w-0 items-start gap-2 px-3 py-3" aria-label="Recent work">
+                  <Clock3Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    {summary.recent.map((work) => (
+                      <button
+                        className="block w-full min-w-0 border-b border-border/60 py-1.5 text-left first:pt-0 last:border-b-0 last:pb-0 hover:text-primary"
+                        key={work.id}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onOpenWork(work);
+                        }}
+                      >
+                        <span className="block min-w-0 leading-tight">
+                          <span className="block truncate text-xs font-medium text-foreground/75" title={work.title}>
+                            {work.title}
+                          </span>
+                          <span className="flex min-w-0 items-center justify-between gap-2 pt-0.5 text-[10px] text-muted-foreground">
+                            <span className="truncate">{displayName(work.assignee)}</span>
+                            <span className="shrink-0 tabular-nums">{compactAge(work.updatedAt)}</span>
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-1 flex items-center justify-between gap-3 text-sm">
-                  <span className="truncate font-medium">{summary.latest.title}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(summary.latest.updatedAt), { addSuffix: true })}
-                  </span>
+                <div className="grid content-center gap-3 border-l border-border/50 bg-background/35 px-3 py-3" aria-label="Project work totals">
+                  <WorkMetric label="Task" value={summary.tasks.count} progress={summary.tasks.progress} />
+                  <WorkMetric label="Action" value={summary.actions.count} progress={summary.actions.progress} />
+                  <WorkMetric label="Review" value={summary.reviews.count} progress={summary.reviews.progress} />
                 </div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-4 gap-2" aria-label="Project state totals">
-                <StateTotal label="Total" value={summary.total} />
-                <StateTotal label="Active" value={summary.active} />
-                <StateTotal label="Done" value={summary.completed} />
-                <StateTotal label="Blocked" value={summary.blocked} tone="danger" />
               </div>
 
               <div className="mt-auto flex items-end justify-between gap-3 pt-4">
@@ -126,11 +142,17 @@ export function ProjectCardList({
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <Button size="sm" onClick={(event) => {
-                    event.stopPropagation();
-                    onOpen(project);
-                  }}>
-                    Open project
+                  <Button
+                    aria-label={`Open ${project.title}`}
+                    size="icon"
+                    title="Open project"
+                    variant="outline"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpen(project);
+                    }}
+                  >
+                    <FolderOpenIcon className="size-4" />
                   </Button>
                   <div onClick={(event) => event.stopPropagation()}>
                     <WorkspaceRowActions
@@ -184,20 +206,18 @@ export function ProjectCardList({
 function projectSummary(project: ProjectManagerRecord, records: ProjectManagerRecord[]) {
   const descendants = records.filter((record) => belongsToProject(record, project, records));
   const completed = descendants.filter((record) => isCompleted(record.status)).length;
-  const blocked = descendants.filter((record) => record.status === "blocked").length;
-  const active = descendants.filter(
-    (record) => record.active && !isCompleted(record.status) && record.status !== "blocked",
-  ).length;
-  const latest = [project, ...descendants].sort(
+  const recent = descendants.sort(
     (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
-  )[0] ?? project;
+  ).slice(0, 5);
+  const tasks = kindSummary(descendants, "task");
+  const actions = kindSummary(descendants, "activity");
+  const reviews = kindSummary(descendants, "review");
   return {
-    active,
-    blocked,
-    completed,
-    latest,
+    actions,
+    recent: recent.length ? recent : [project],
     progress: descendants.length ? Math.round((completed / descendants.length) * 100) : projectProgress(project.status),
-    total: descendants.length,
+    reviews,
+    tasks,
   };
 }
 
@@ -270,38 +290,70 @@ function belongsToProject(
 }
 
 function ProgressCircle({ value }: { value: number }) {
-  const progress = Math.max(0, Math.min(100, value));
-  const radius = 25;
+  const progress = clamp(value);
+  const radius = 24;
   const circumference = 2 * Math.PI * radius;
   return (
-    <div className="relative size-16 shrink-0" aria-label={`${progress}% complete`}>
-      <svg className="size-16 -rotate-90" viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx="32" cy="32" fill="none" r={radius} stroke="currentColor" strokeWidth="5" className="text-muted" />
-        <circle
-          cx="32"
-          cy="32"
-          fill="none"
-          r={radius}
-          stroke="currentColor"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - progress / 100)}
-          strokeLinecap="round"
-          strokeWidth="5"
-          className="text-primary"
-        />
+    <div className="relative size-14" aria-label={`Overall project progress: ${progress}%`} role="img">
+      <svg className="size-14 -rotate-90" viewBox="0 0 56 56" aria-hidden="true">
+        <circle className="text-muted" cx="28" cy="28" fill="none" r={radius} stroke="currentColor" strokeWidth="4" />
+        <circle className={progressStroke(progress)} cx="28" cy="28" fill="none" r={radius} stroke="currentColor" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress / 100)} strokeLinecap="round" strokeWidth="4" />
       </svg>
-      <span className="absolute inset-0 grid place-items-center text-xs font-semibold">{progress}%</span>
+      <span className="absolute inset-0 grid place-items-center text-xs font-semibold tabular-nums">{progress}%</span>
     </div>
   );
 }
 
-function StateTotal({ label, tone, value }: { label: string; tone?: "danger"; value: number }) {
+function WorkMetric({ label, progress, value }: { label: string; progress: number; value: number }) {
+  const normalized = clamp(progress);
   return (
     <div className="min-w-0">
-      <div className={`text-lg font-semibold ${tone === "danger" && value ? "text-destructive" : ""}`}>{value}</div>
-      <div className="truncate text-xs text-muted-foreground">{label}</div>
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="truncate text-xs text-muted-foreground/75">{label}</span>
+        <span className="text-sm font-medium tabular-nums text-foreground/45">{value}</span>
+      </div>
+      <svg className="mt-1.5 h-2 w-full overflow-visible" viewBox="0 0 100 8" preserveAspectRatio="none" role="img" aria-label={`${label} completion: ${normalized}%`}>
+        <rect fill="currentColor" className="text-slate-200/65" height="8" rx="4" width="100" />
+        <rect fill="currentColor" className={progressStroke(normalized)} height="8" rx="4" width={normalized} />
+      </svg>
     </div>
   );
+}
+
+function kindSummary(records: ProjectManagerRecord[], kind: ProjectManagerRecord["kind"]) {
+  const matching = records.filter((record) => record.kind === kind);
+  const completed = matching.filter((record) => isCompleted(record.status)).length;
+  return { count: matching.length, progress: matching.length ? Math.round(completed / matching.length * 100) : 0 };
+}
+
+function clamp(value: number) {
+  return Math.max(0, Math.min(100, value));
+}
+
+function compactAge(updatedAt: string) {
+  const elapsedMinutes = Math.max(0, Math.floor((Date.now() - Date.parse(updatedAt)) / 60_000));
+  if (elapsedMinutes < 1) return "now";
+  if (elapsedMinutes < 60) return `${elapsedMinutes}m`;
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  if (elapsedHours < 24) return `${elapsedHours}h`;
+  const elapsedDays = Math.floor(elapsedHours / 24);
+  if (elapsedDays < 30) return `${elapsedDays}d`;
+  const elapsedMonths = Math.floor(elapsedDays / 30);
+  if (elapsedMonths < 12) return `${elapsedMonths}mo`;
+  return `${Math.floor(elapsedMonths / 12)}y`;
+}
+
+function displayName(assignee: string) {
+  const name = assignee.trim().split("@", 1)[0]?.replace(/[._-]+/g, " ").trim();
+  if (!name) return "Unassigned";
+  return name.replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function progressStroke(value: number) {
+  if (value >= 76) return "text-emerald-500";
+  if (value >= 51) return "text-blue-500";
+  if (value >= 26) return "text-amber-400";
+  return "text-red-500";
 }
 
 function isCompleted(status: string) {

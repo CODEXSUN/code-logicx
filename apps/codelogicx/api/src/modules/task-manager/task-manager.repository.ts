@@ -11,11 +11,12 @@ import type { Todo, TodoLookup, TodoLookupKind } from "./task-manager.types.js";
 export class TaskManagerRepository {
   constructor(private readonly database: Kysely<CodeLogicXDatabase> = getCodeLogicXDatabase()) {}
 
-  async list(scopeKey: string) {
+  async list(scopeKey: string, ownerEmail: string) {
     const rows = await this.database
       .selectFrom("codelogicx_task_manager_todos")
       .selectAll()
       .where("scope_key", "=", scopeKey)
+      .where("owner_email", "=", ownerEmail)
       .where("sync_status", "!=", "deleted")
       .orderBy("position")
       .orderBy("updated_at", "desc")
@@ -23,12 +24,13 @@ export class TaskManagerRepository {
     return rows.map(mapTodo);
   }
 
-  async find(scopeKey: string, uuid: string) {
+  async find(scopeKey: string, uuid: string, ownerEmail: string) {
     const row = await this.database
       .selectFrom("codelogicx_task_manager_todos")
       .selectAll()
       .where("scope_key", "=", scopeKey)
       .where("uuid", "=", uuid)
+      .where("owner_email", "=", ownerEmail)
       .where("sync_status", "!=", "deleted")
       .executeTakeFirst();
     return row ? mapTodo(row) : null;
@@ -38,7 +40,7 @@ export class TaskManagerRepository {
     await this.database.transaction().execute(async (transaction) => {
       await transaction
         .insertInto("codelogicx_task_manager_todos")
-        .values(todoValues(scopeKey, record))
+        .values(todoValues(scopeKey, record, actorEmail))
         .executeTakeFirstOrThrow();
       await writeActivity(transaction, actorEmail, "created", record.id, {
         title: record.title
@@ -65,6 +67,7 @@ export class TaskManagerRepository {
         })
         .where("scope_key", "=", scopeKey)
         .where("uuid", "=", record.id)
+        .where("owner_email", "=", actorEmail)
         .executeTakeFirstOrThrow();
       await writeActivity(transaction, actorEmail, action, record.id, {
         status: record.status,
@@ -85,6 +88,7 @@ export class TaskManagerRepository {
         })
         .where("scope_key", "=", scopeKey)
         .where("uuid", "=", record.id)
+        .where("owner_email", "=", actorEmail)
         .executeTakeFirstOrThrow();
       await writeActivity(transaction, actorEmail, "deleted", record.id, {
         title: record.title
@@ -104,6 +108,7 @@ export class TaskManagerRepository {
           })
           .where("scope_key", "=", scopeKey)
           .where("uuid", "=", record.id)
+          .where("owner_email", "=", actorEmail)
           .executeTakeFirstOrThrow();
       }
       await writeActivity(transaction, actorEmail, "reordered", "multiple", {
@@ -158,13 +163,14 @@ export class TaskManagerRepository {
   }
 }
 
-function todoValues(scopeKey: string, record: Todo) {
+function todoValues(scopeKey: string, record: Todo, ownerEmail: string) {
   return {
     category: record.category,
     created_at: new Date(record.createdAt),
     description: record.description,
     due_date: record.dueDate,
     group_name: record.groupName,
+    owner_email: ownerEmail,
     project_uuid: record.projectId,
     position: record.position,
     priority: record.priority,

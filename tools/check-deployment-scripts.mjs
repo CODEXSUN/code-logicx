@@ -2,18 +2,16 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
-const updater = read(".container/update.sh");
+const updater = read("update.sh");
 const setup = read(".container/setup.sh");
 const compose = read(".container/docker-compose.yml");
 const deployExample = read(".container/deploy.env.example");
-const rootUpdater = read("update.sh");
-const compatibilityUpdater = read("updat.sh");
 const watcher = read(".container/update-watcher/codelogicx-update-watcher.sh");
 const watcherInstaller = read(".container/update-watcher/install.sh");
 const watcherService = read(".container/update-watcher/codelogicx-update-watcher.service");
 const watcherTimer = read(".container/update-watcher/codelogicx-update-watcher.timer");
 
-requireTokens(".container/update.sh", updater, [
+requireTokens("update.sh", updater, [
   "umask 077",
   "flock -n 9",
   "--allow-dirty",
@@ -39,8 +37,6 @@ requireTokens(".container/deploy.env.example", deployExample, [
   "CODELOGICX_UPDATE_MIN_BACKUP_FREE_MB=",
   "CODELOGICX_UPDATE_MIN_DOCKER_FREE_MB="
 ]);
-requireTokens("update.sh", rootUpdater, ['exec bash "$ROOT_DIR/.container/update.sh" "$@"']);
-requireTokens("updat.sh", compatibilityUpdater, ['exec bash "$ROOT_DIR/update.sh" "$@"']);
 requireTokens(".container/update-watcher/codelogicx-update-watcher.sh", watcher, [
   "flock -n 9",
   "merge-base --is-ancestor",

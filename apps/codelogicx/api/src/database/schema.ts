@@ -58,13 +58,81 @@ export type CodeLogicXDatabase = {
   codelogicx_sync_tokens: CodeLogicXSyncTokensTable;
 };
 
-export type IdeasTable = { id: Generated<number>; uuid: string; title: string; excerpt: string; content_html: string; category: string; tags_json: string; project_uuids_json: string; status: string; author: string; created_at: TimestampColumn; updated_at: TimestampColumn };
-export type IdeaCommentsTable = { id: Generated<number>; uuid: string; idea_uuid: string; parent_uuid: string | null; body_html: string; author: string; created_at: TimestampColumn; updated_at: TimestampColumn };
-export type IdeaLikesTable = { id: Generated<number>; uuid: string; entity_kind: string; entity_uuid: string; actor: string; created_at: TimestampColumn };
-export type IdeaPollsTable = { id: Generated<number>; uuid: string; idea_uuid: string; question: string; options_json: string; multiple_choice: boolean; closes_at: TimestampColumn | null; created_at: TimestampColumn };
-export type IdeaPollVotesTable = { id: Generated<number>; uuid: string; poll_uuid: string; option_id: string; actor: string; created_at: TimestampColumn };
-export type IdeaAttachmentsTable = { id: Generated<number>; uuid: string; idea_uuid: string; name: string; mime_type: string; size_bytes: number; data_base64: string; created_by: string; created_at: TimestampColumn };
-export type IdeaDrawingsTable = { id: Generated<number>; uuid: string; idea_uuid: string; scene_json: string; updated_by: string; created_at: TimestampColumn; updated_at: TimestampColumn };
+export type IdeasTable = {
+  id: Generated<number>;
+  uuid: string;
+  assignee_uuids_json: string;
+  title: string;
+  excerpt: string;
+  content_html: string;
+  category: string;
+  category_color: string;
+  tags_json: string;
+  project_uuids_json: string;
+  status: string;
+  status_color: string;
+  visibility: "private" | "public";
+  author: string;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+};
+export type IdeaCommentsTable = {
+  id: Generated<number>;
+  uuid: string;
+  idea_uuid: string;
+  parent_uuid: string | null;
+  body_html: string;
+  author: string;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+};
+export type IdeaLikesTable = {
+  id: Generated<number>;
+  uuid: string;
+  entity_kind: string;
+  entity_uuid: string;
+  actor: string;
+  created_at: TimestampColumn;
+};
+export type IdeaPollsTable = {
+  id: Generated<number>;
+  uuid: string;
+  idea_uuid: string;
+  question: string;
+  options_json: string;
+  multiple_choice: boolean;
+  closes_at: TimestampColumn | null;
+  created_at: TimestampColumn;
+};
+export type IdeaPollVotesTable = {
+  id: Generated<number>;
+  uuid: string;
+  poll_uuid: string;
+  option_id: string;
+  actor: string;
+  created_at: TimestampColumn;
+};
+export type IdeaAttachmentsTable = {
+  id: Generated<number>;
+  uuid: string;
+  idea_uuid: string;
+  name: string;
+  mime_type: string;
+  size_bytes: number;
+  data_base64: string;
+  storage_key: string | null;
+  created_by: string;
+  created_at: TimestampColumn;
+};
+export type IdeaDrawingsTable = {
+  id: Generated<number>;
+  uuid: string;
+  idea_uuid: string;
+  scene_json: string;
+  updated_by: string;
+  created_at: TimestampColumn;
+  updated_at: TimestampColumn;
+};
 
 export type ModelProviderConnectionsTable = {
   actor_id: string;
@@ -589,6 +657,7 @@ export type TaskManagerTodosTable = SyncColumns & {
   group_name: string;
   project_uuid: string;
   id: Generated<number>;
+  owner_email: string;
   position: number;
   priority: string;
   scope_key: string;

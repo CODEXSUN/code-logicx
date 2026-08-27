@@ -1,8 +1,9 @@
 import { formatDistanceToNow } from "date-fns";
-import { ActivityIcon, Code2Icon } from "lucide-react";
+import { ActivityIcon, BlocksIcon, Code2Icon } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { WorkspaceAnimatedTabs } from "@codelogicx/ui/workspace/animated-tabs";
 import type { ProjectManagerRecord } from "../project-manager/project-manager.types";
+import { PlatformRegistryWorkspace } from "../platform-registry/platform-registry.workspace";
 
 export function ProjectDevelopmentTabs({
   overview,
@@ -27,8 +28,13 @@ export function ProjectDevelopmentTabs({
         },
         {
           content: <ActivityTab project={project} records={records} />,
-          label: <TabLabel icon={ActivityIcon} text="Activity" />,
+          label: <TabLabel icon={ActivityIcon} text="Actions" />,
           value: "activity"
+        },
+        {
+          content: <PlatformRegistryWorkspace embedded project={project} />,
+          label: <TabLabel icon={BlocksIcon} text="Architect" />,
+          value: "architect"
         }
       ]}
     />
@@ -50,7 +56,7 @@ function ActivityTab({
     .slice(0, 20);
   return (
     <section className="rounded-xl border bg-card p-5">
-      <h3 className="font-semibold">Project activity</h3>
+      <h3 className="font-semibold">Project actions</h3>
       <div className="mt-4 divide-y">
         {recent.map((record) => (
           <div className="flex items-center gap-3 py-3" key={`${record.kind}-${record.id}`}>
@@ -80,7 +86,9 @@ function TabLabel({ icon: Icon, text }: { icon: typeof Code2Icon; text: string }
   );
 }
 function displayKind(kind: string) {
-  return kind === "issue" ? "Initiative" : kind.charAt(0).toUpperCase() + kind.slice(1);
+  if (kind === "issue") return "Module";
+  if (kind === "activity") return "Action";
+  return kind.charAt(0).toUpperCase() + kind.slice(1);
 }
 function belongsToProject(
   record: ProjectManagerRecord,

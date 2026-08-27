@@ -1,5 +1,12 @@
-import { useState } from "react";
-import { DatabaseZapIcon, ShieldAlertIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import QRCode from "qrcode";
+import {
+  CopyIcon,
+  DatabaseZapIcon,
+  QrCodeIcon,
+  ShieldAlertIcon,
+  SmartphoneIcon
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,9 +19,18 @@ import {
   AlertDialogTrigger
 } from "@codelogicx/ui/components/alert-dialog";
 import { Button } from "@codelogicx/ui/components/button";
-import { logout } from "../../shared/api/platform-api";
+import { createMobilePairing, logout } from "../../shared/api/platform-api";
 
-export function ApplicationSettingsWorkspace() {
+export function ApplicationSettingsWorkspace({
+  page = "clear-cache"
+}: {
+  page?: "clear-cache" | "mobile-connect";
+}) {
+  if (page === "mobile-connect") return <MobileConnectWorkspace />;
+  return <ClearCacheWorkspace />;
+}
+
+function ClearCacheWorkspace() {
   const [clearing, setClearing] = useState(false);
 
   const clearData = async () => {
@@ -79,6 +95,110 @@ export function ApplicationSettingsWorkspace() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      </section>
+    </main>
+  );
+}
+
+function MobileConnectWorkspace() {
+  const [pairing, setPairing] = useState<{
+    code: string;
+    expiresAt: string;
+    image: string;
+    pairingUrl: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      try {
+        const ticket = await createMobilePairing();
+        const image = await QRCode.toDataURL(ticket.payload, {
+          errorCorrectionLevel: "M",
+          margin: 2,
+          width: 360
+        });
+        if (active) {
+          setPairing({
+            code: ticket.code,
+            expiresAt: ticket.expiresAt,
+            image,
+            pairingUrl: ticket.pairingUrl
+          });
+          setError("");
+        }
+      } catch (reason) {
+        if (active)
+          setError(reason instanceof Error ? reason.message : "Could not create pairing code.");
+      }
+    };
+    void refresh();
+    const interval = window.setInterval(() => void refresh(), 45_000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+  return (
+    <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl py-6 lg:w-[calc(100%-3rem)] lg:py-10">
+      <header className="max-w-2xl">
+        <h1 className="text-2xl font-semibold tracking-tight">Mobile Connect</h1>
+        <p className="pt-2 text-sm leading-6 text-muted-foreground">
+          Pair the CodeLogicX mobile application with this signed-in account.
+        </p>
+      </header>
+      <section className="mt-8 flex max-w-3xl items-start gap-4 border-t py-6">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+          <SmartphoneIcon className="size-5" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="font-semibold">Secure device pairing</h2>
+          <p className="max-w-xl pt-1 text-sm leading-6 text-muted-foreground">
+            A short-lived, one-time QR code will appear here. Connection details remain inside the
+            code and the mobile device must confirm its identity after scanning.
+          </p>
+          <div className="mt-6 flex size-64 items-center justify-center rounded-xl border bg-white p-3 text-muted-foreground">
+            {pairing ? (
+              <img
+                alt="Scan to connect this CodeLogicX account"
+                className="size-full"
+                src={pairing.image}
+              />
+            ) : (
+              <div className="grid justify-items-center gap-3 text-center">
+                <QrCodeIcon className="size-12" />
+                <span className="max-w-44 text-xs leading-5">
+                  {error || "Creating secure pairing code..."}
+                </span>
+              </div>
+            )}
+          </div>
+          <p className="max-w-64 pt-3 text-center text-xs leading-5 text-muted-foreground">
+            {pairing
+              ? `Refreshes automatically · expires ${new Date(pairing.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`
+              : "Keep this page open while connecting."}
+          </p>
+          {pairing ? (
+            <div className="mt-5 grid max-w-64 gap-3 border-t pt-5">
+              <div className="text-center">
+                <span className="text-xs text-muted-foreground">Desktop one-time code</span>
+                <strong className="block pt-1 text-2xl tracking-[0.28em]">{pairing.code}</strong>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void navigator.clipboard.writeText(pairing.pairingUrl);
+                  setCopied(true);
+                  window.setTimeout(() => setCopied(false), 1600);
+                }}
+              >
+                <CopyIcon />
+                {copied ? "Copied sync URL" : "Copy desktop sync URL"}
+              </Button>
+            </div>
+          ) : null}
+        </div>
       </section>
     </main>
   );
