@@ -1,6 +1,7 @@
 pub mod agent;
 pub mod compass_release;
 pub mod agent_history;
+pub mod cloud;
 pub mod files;
 pub mod git;
 pub mod integrations;

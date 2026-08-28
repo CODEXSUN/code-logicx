@@ -1,8 +1,48 @@
 # Changelog
 
-Current version: 1.0.91
-Release tag: v-1.0.91
-Changelog label: v 1.0.91
+Current version: 1.0.92
+Release tag: v-1.0.92
+Changelog label: v 1.0.92
+
+## v-1.0.92
+
+### [v 1.0.92] 2026-08-28 10:42 pm - Desktop and cloud service bridge
+
+#### Database Changes
+
+- Database update: No.
+- No persisted schema, seed, or data changed.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.92.
+- Added Connect Service pages to the web application and Desktop IDE.
+- Added authenticated, one-time service pairing routes for desktop clients.
+- Added rotating web pairing codes, QR codes, and bridge URLs.
+- Added desktop connection by one-time code or bridge URL.
+- Added connected-account status, bridge verification, and disconnect controls.
+- Kept the existing mobile pairing routes compatible with service pairing tickets.
+- Set pairing payload endpoints from the active API and web environment.
+- Added a native Tauri HTTP command for desktop cloud requests.
+- Kept local HTTP access limited to `localhost` and `127.0.0.1`.
+- Required HTTPS for all other desktop bridge endpoints.
+- Updated web, API, desktop, and mobile version metadata to `1.0.92`.
+
+#### Verification
+
+- Passed Platform API, CodeLogicX web, and desktop TypeScript checks and ESLint.
+- Passed the Rust `cargo check` for the native desktop bridge command.
+- Passed the CodeLogicX web and desktop production builds.
+- Created and redeemed a local service ticket through `127.0.0.1:9150`.
+- Verified the redeemed session for `admin@admin.com`.
+- Verified that local tickets contain the active local API and web origins.
+- Passed the repository version check and whitespace check.
+- Built the `CodeLogicX_1.0.92_x64_en-US.msi` Windows installer.
+- Built the `CodeLogicX_Setup_1.0.92_x64.exe` first-install launcher.
+- Created the updater signature, updater manifest, release manifest, and SHA-256 file.
+- Passed the desktop release metadata and artifact check.
+- The release has an updater signature but no Authenticode certificate.
+- Did not deploy the API or desktop updater files to the production service.
 
 ## v-1.0.91
 

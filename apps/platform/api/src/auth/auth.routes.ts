@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { createHash, randomBytes, randomInt, randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
@@ -23,17 +23,19 @@ const mobilePairingBody = z.union([
 const mobilePairingTickets = new Map<string, MobilePairingTicket>();
 const mobilePairingAttempts = new Map<string, PairingAttemptWindow>();
 const mobilePairingLifetimeMs = 60_000;
-const mobileReleaseSchema = z.object({
-  apkUrl: z.string().url(),
-  applicationId: z.literal("com.codexsun.codelogicx"),
-  publishedAt: z.string().datetime(),
-  sha256: z.string().regex(/^[a-f\d]{64}$/iu),
-  version: z.string().regex(/^\d+\.\d+\.\d+$/u),
-  versionCode: z.number().int().positive()
-}).strict();
+const mobileReleaseSchema = z
+  .object({
+    apkUrl: z.string().url(),
+    applicationId: z.literal("com.codexsun.codelogicx"),
+    publishedAt: z.string().datetime(),
+    sha256: z.string().regex(/^[a-f\d]{64}$/iu),
+    version: z.string().regex(/^\d+\.\d+\.\d+$/u),
+    versionCode: z.number().int().positive()
+  })
+  .strict();
 
 export async function registerAuthRoutes(app: FastifyInstance) {
-  app.post("/auth/mobile-pairing", async (request, reply) => {
+  const createPairing = async (request: FastifyRequest, reply: FastifyReply) => {
     const payload = authenticatedPayload(request);
     if (!payload)
       return reply
@@ -55,19 +57,23 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       payload,
       secretHash: hashSecret(secret)
     });
-    const pairing = { endpoint: "https://cx.codexsun.com", secret, ticketId, version: 1 };
+    const endpoint = env.PLATFORM_API_URL.replace(/\/+$/u, "");
+    const webOrigin = env.PLATFORM_WEB_ORIGIN.replace(/\/+$/u, "");
+    const pairing = { endpoint, secret, ticketId, version: 1 };
     return ok(
       {
         code,
         expiresAt: new Date(expiresAt).toISOString(),
-        pairingUrl: `https://cx.codexsun.com/connect?pairing=${Buffer.from(JSON.stringify(pairing)).toString("base64url")}`,
+        pairingUrl: `${webOrigin}/connect?pairing=${Buffer.from(JSON.stringify(pairing)).toString("base64url")}`,
         payload: JSON.stringify(pairing)
       },
       { requestId: request.id }
     );
-  });
+  };
+  app.post("/auth/mobile-pairing", createPairing);
+  app.post("/auth/service-pairing", createPairing);
 
-  app.post("/auth/mobile-pairing/redeem", async (request, reply) => {
+  const redeemPairing = async (request: FastifyRequest, reply: FastifyReply) => {
     const parsed = mobilePairingBody.safeParse(request.body);
     if (!parsed.success)
       return reply
@@ -115,7 +121,9 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       ...(role ? { role } : {})
     });
     return ok({ accessToken, email, name, permissions, role }, { requestId: request.id });
-  });
+  };
+  app.post("/auth/mobile-pairing/redeem", redeemPairing);
+  app.post("/auth/service-pairing/redeem", redeemPairing);
 
   app.post("/auth/development/login", async (request, reply) => {
     if (env.NODE_ENV !== "development" || env.DEV_AUTO_LOGIN !== "1") {
@@ -202,12 +210,14 @@ export async function registerAuthRoutes(app: FastifyInstance) {
 
   app.get("/auth/mobile-release", async (request, reply) => {
     if (!authenticatedPayload(request)) {
-      return reply.code(401).send(
-        fail(
-          { code: "AUTH_SESSION_EXPIRED", message: "Session expired. Please sign in again." },
-          { requestId: request.id }
-        )
-      );
+      return reply
+        .code(401)
+        .send(
+          fail(
+            { code: "AUTH_SESSION_EXPIRED", message: "Session expired. Please sign in again." },
+            { requestId: request.id }
+          )
+        );
     }
     try {
       const release = mobileReleaseSchema.parse(
@@ -215,17 +225,22 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       );
       return ok(release, { requestId: request.id });
     } catch {
-      return reply.code(404).send(
-        fail(
-          { code: "MOBILE_RELEASE_NOT_FOUND", message: "No mobile release is available." },
-          { requestId: request.id }
-        )
-      );
+      return reply
+        .code(404)
+        .send(
+          fail(
+            { code: "MOBILE_RELEASE_NOT_FOUND", message: "No mobile release is available." },
+            { requestId: request.id }
+          )
+        );
     }
   });
 
   app.get<{ Params: { file: string } }>("/mobile/releases/:file", async (request, reply) => {
-    const parsed = z.string().regex(/^code-logicx-\d+\.apk$/u).safeParse(request.params.file);
+    const parsed = z
+      .string()
+      .regex(/^code-logicx-\d+\.apk$/u)
+      .safeParse(request.params.file);
     if (!parsed.success) return reply.code(404).send("Release not found.");
     const release = await currentMobileRelease();
     if (!release || new URL(release.apkUrl).pathname.split("/").at(-1) !== parsed.data)

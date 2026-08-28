@@ -42,6 +42,29 @@ export const apiBinaryPost = <T>(path: string, data: Blob, headers: Record<strin
     headers: { "Content-Type": "application/octet-stream", ...headers },
     method: "POST"
   });
+export async function apiPlatformPost<T>(path: string, data?: unknown) {
+  const authorization = cxappAuthorization();
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    body: JSON.stringify(data ?? {}),
+    headers: {
+      "Content-Type": "application/json",
+      ...(authorization ? { Authorization: authorization } : {})
+    },
+    method: "POST"
+  });
+  const text = await response.text();
+  if (!text) throw new Error(`CodeLogicX API returned an empty response (${response.status}).`);
+  let envelope: ApiEnvelope<T>;
+  try {
+    envelope = JSON.parse(text) as ApiEnvelope<T>;
+  } catch {
+    throw new Error(`CodeLogicX API returned an invalid response (${response.status}).`);
+  }
+  if (!response.ok || !envelope.success) {
+    throw new Error(envelope.success ? "Request failed" : envelope.error.message);
+  }
+  return envelope.data;
+}
 export async function apiGetBlob(path: string) {
   const authorization = cxappAuthorization();
   const response = await fetch(`${apiBaseUrl}/api/codelogicx${path}`, {

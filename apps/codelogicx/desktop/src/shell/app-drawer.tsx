@@ -1,6 +1,7 @@
 import {
   Download,
   Blocks,
+  Cable,
   FolderGit2,
   FolderOpen,
   PanelBottom,
@@ -19,6 +20,7 @@ type Theme = "dark" | "light" | "system";
 export function AppDrawer({
   onClose,
   onOpenCommands,
+  onOpenConnectService,
   onOpenSettings,
   onOpenUpdates,
   onOpenWorkGroup,
@@ -33,6 +35,7 @@ export function AppDrawer({
 }: {
   onClose: () => void;
   onOpenCommands: () => void;
+  onOpenConnectService: () => void;
   onOpenSettings: () => void;
   onOpenUpdates: () => void;
   onOpenWorkGroup: () => void;
@@ -99,7 +102,16 @@ export function AppDrawer({
             </button>
           ))}
         </nav>
-        <RepositoryGroups onSelectWorkspace={(path) => select(() => onSelectWorkspace(path))} workspaces={workspaces} />
+        <RepositoryGroups
+          onSelectWorkspace={(path) => select(() => onSelectWorkspace(path))}
+          workspaces={workspaces}
+        />
+        <nav aria-label="Cloud service" className="drawer-connect-service">
+          <button onClick={() => select(onOpenConnectService)} type="button">
+            <Cable size={18} />
+            <span>Connect Service</span>
+          </button>
+        </nav>
         <section className="drawer-settings">
           <h2>
             <Settings size={16} /> Settings
@@ -133,14 +145,31 @@ function RepositoryGroups({
 }) {
   const projects = workspaces.filter((workspace) => workspace.relationship === "project");
   const addOnProjects = workspaces.filter((workspace) => workspace.relationship === "addOn");
-  const plugins = workspaces.filter((workspace) => workspace.kind === "plugin" && workspace.relationship !== "addOn");
+  const plugins = workspaces.filter(
+    (workspace) => workspace.kind === "plugin" && workspace.relationship !== "addOn"
+  );
   if (projects.length === 0 && addOnProjects.length === 0 && plugins.length === 0) return null;
 
   return (
     <section className="drawer-repositories">
-      <RepositoryGroup icon={FolderGit2} label="Projects" onSelectWorkspace={onSelectWorkspace} workspaces={projects} />
-      <RepositoryGroup icon={Blocks} label="Add-on projects" onSelectWorkspace={onSelectWorkspace} workspaces={addOnProjects} />
-      <RepositoryGroup icon={Puzzle} label="Plugins" onSelectWorkspace={onSelectWorkspace} workspaces={plugins} />
+      <RepositoryGroup
+        icon={FolderGit2}
+        label="Projects"
+        onSelectWorkspace={onSelectWorkspace}
+        workspaces={projects}
+      />
+      <RepositoryGroup
+        icon={Blocks}
+        label="Add-on projects"
+        onSelectWorkspace={onSelectWorkspace}
+        workspaces={addOnProjects}
+      />
+      <RepositoryGroup
+        icon={Puzzle}
+        label="Plugins"
+        onSelectWorkspace={onSelectWorkspace}
+        workspaces={plugins}
+      />
     </section>
   );
 }
@@ -159,9 +188,15 @@ function RepositoryGroup({
   if (workspaces.length === 0) return null;
   return (
     <div className="drawer-repository-group">
-      <h2><Icon size={15} /> {label}</h2>
+      <h2>
+        <Icon size={15} /> {label}
+      </h2>
       {workspaces.map((workspace) => (
-        <button key={workspace.path} onClick={() => onSelectWorkspace(workspace.path)} type="button">
+        <button
+          key={workspace.path}
+          onClick={() => onSelectWorkspace(workspace.path)}
+          type="button"
+        >
           <span>{workspace.name}</span>
           <small>{workspace.kind === "plugin" ? "Plugin" : "Folder"}</small>
         </button>

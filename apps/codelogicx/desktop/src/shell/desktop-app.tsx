@@ -83,6 +83,11 @@ const ProjectIdeas = lazy(() =>
 const CloudWorkspace = lazy(() =>
   import("../cloud/cloud-workspace").then((module) => ({ default: module.CloudWorkspace }))
 );
+const ConnectServiceWorkspace = lazy(() =>
+  import("../workspaces/connect-service-workspace").then((module) => ({
+    default: module.ConnectServiceWorkspace
+  }))
+);
 export const activities = [
   { icon: LayoutDashboard, id: "overview", label: "Overview" },
   { icon: FolderKanban, id: "projects", label: "Projects" },
@@ -204,7 +209,10 @@ export function DesktopApp() {
   }, [ui.setTerminalOpen]);
 
   const panelTitle = useMemo(
-    () => activities.find((item) => item.id === ui.activity)?.label ?? "Explorer",
+    () =>
+      ui.activity === "connect-service"
+        ? "Connect Service"
+        : (activities.find((item) => item.id === ui.activity)?.label ?? "Explorer"),
     [ui.activity]
   );
   const titlebarLabel =
@@ -335,7 +343,8 @@ export function DesktopApp() {
           ui.activity === "cloud" ||
           ui.activity === "settings" ||
           ui.activity === "hostinger" ||
-          ui.activity === "sync"
+          ui.activity === "sync" ||
+          ui.activity === "connect-service"
             ? "ide-body agent-active"
             : "ide-body"
         }
@@ -543,6 +552,15 @@ export function DesktopApp() {
               </Suspense>
             </div>
           ) : null}
+          {ui.activity === "connect-service" ? (
+            <div className="workspace-surface">
+              <Suspense
+                fallback={<div className="workspace-loading">Loading service connection...</div>}
+              >
+                <ConnectServiceWorkspace />
+              </Suspense>
+            </div>
+          ) : null}
           {editorStarted ? (
             <div
               className="workspace-surface"
@@ -595,6 +613,7 @@ export function DesktopApp() {
       <AppDrawer
         onClose={() => ui.setDrawerOpen(false)}
         onOpenCommands={() => ui.setPaletteOpen(true)}
+        onOpenConnectService={() => ui.setActivity("connect-service")}
         onOpenSettings={() => ui.setActivity("settings")}
         onOpenUpdates={() => ui.setUpdateOpen(true)}
         onOpenWorkGroup={() => setWorkGroupOpen(true)}
@@ -621,6 +640,7 @@ function isFullWorkspace(activity: string) {
   return [
     "assist",
     "cloud",
+    "connect-service",
     "tasks",
     "compass",
     "hostinger",

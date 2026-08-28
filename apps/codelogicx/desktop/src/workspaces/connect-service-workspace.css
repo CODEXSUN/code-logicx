@@ -1,0 +1,244 @@
+.connect-service-workspace {
+  width: 100%;
+  min-height: 100%;
+  padding: 34px 38px;
+  color: var(--foreground);
+  background: var(--background);
+}
+
+.connect-service-workspace > header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: min(720px, 100%);
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.connect-service-icon {
+  display: grid;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.connect-service-workspace header div {
+  display: grid;
+  gap: 8px;
+}
+
+.connect-service-workspace p,
+.connect-service-workspace h1,
+.connect-service-workspace header span {
+  margin: 0;
+}
+
+.connect-service-workspace p {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.connect-service-workspace h1 {
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.connect-service-workspace header div > span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.connect-service-card {
+  width: min(620px, 100%);
+  margin-top: 28px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+}
+
+.connect-service-card.connected {
+  border-color: color-mix(in srgb, #159a75 45%, var(--border));
+}
+.connect-service-card-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.connect-service-card-title > span {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--secondary);
+  color: var(--muted);
+}
+.connect-service-card.connected .connect-service-card-title > span {
+  color: #159a75;
+}
+.connect-service-card-title h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.connect-service-card-title p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.connect-service-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  margin-top: 22px;
+  padding: 3px;
+  border-radius: 6px;
+  background: var(--secondary);
+}
+.connect-service-modes button {
+  height: 34px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.connect-service-modes button[aria-selected="true"] {
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+}
+.connect-service-fields {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+.connect-service-fields label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.connect-service-fields input,
+.connect-service-fields textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  outline: none;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 13px;
+}
+.connect-service-fields input {
+  height: 40px;
+  padding: 0 11px;
+}
+.connect-service-fields textarea {
+  resize: vertical;
+  padding: 10px 11px;
+}
+.connect-service-fields input:focus,
+.connect-service-fields textarea:focus {
+  border-color: #2788e8;
+  box-shadow: 0 0 0 2px rgb(39 136 232 / 16%);
+}
+.connect-service-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.connect-service-error {
+  margin: 14px 0 0;
+  color: #d95454;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.connect-service-primary,
+.connect-service-actions button {
+  display: inline-flex;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 0 15px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--secondary);
+  color: var(--foreground);
+  cursor: pointer;
+  font-weight: 650;
+}
+.connect-service-primary {
+  width: 100%;
+  border-color: #087f6c;
+  background: #087f6c;
+  color: white;
+}
+.connect-service-primary:disabled,
+.connect-service-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.connect-service-details {
+  display: grid;
+  gap: 0;
+  margin: 20px 0 0;
+}
+.connect-service-details > div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 14px;
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+}
+.connect-service-details dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+.connect-service-details dd {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+}
+.connect-service-actions {
+  display: flex;
+  gap: 8px;
+}
+.connect-service-actions .danger {
+  color: #d95454;
+}
+.connect-service-workspace .spin {
+  animation: connect-service-spin 0.9s linear infinite;
+}
+@keyframes connect-service-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

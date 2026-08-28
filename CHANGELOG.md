@@ -5,6 +5,37 @@ All notable changes to **logicx_code** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.92] - 2026-08-28
+
+### Added
+
+- Added Connect Service pages to the web application and Desktop IDE.
+- Added one-time service pairing routes for desktop clients.
+- Added rotating web pairing codes, QR codes, and bridge URLs.
+- Added desktop bridge status, verification, and disconnect controls.
+- Added a native Tauri HTTP bridge for cloud requests.
+
+### Changed
+
+- Pairing tickets now use the API and web origins from the active environment.
+- Local development supports web, API, and desktop connections on one computer.
+- Production desktop requests no longer depend on browser CORS support.
+- Updated web, API, desktop, and mobile version metadata to `1.0.92`.
+
+### Security
+
+- One-time bridge tickets expire after one minute and work once.
+- Desktop bridge endpoints require HTTPS except for local development addresses.
+- Repository paths, local credentials, and agent secrets remain on the desktop device.
+
+### Verification
+
+- Passed API, web, desktop, and Rust checks.
+- Created and redeemed a local bridge ticket and verified the connected session.
+- Built and checked the Windows MSI, setup launcher, updater signature, and manifests.
+- The Windows artifacts do not have an Authenticode certificate.
+- The production API and updater files were not deployed during this release build.
+
 ## [1.0.91] - 2026-08-28
 
 ### Added

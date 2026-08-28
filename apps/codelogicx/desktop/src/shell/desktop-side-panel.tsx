@@ -10,6 +10,7 @@ import type { ResourceState } from "./use-desktop-session";
 export type Activity =
   | "assist"
   | "cloud"
+  | "connect-service"
   | "docker"
   | "files"
   | "git"
@@ -115,6 +116,7 @@ function EmptyPanel({ activity }: { activity: Activity }) {
   const descriptions: Record<Activity, string> = {
     assist: "Connect Assist to plan, edit, review, and verify this workspace.",
     cloud: "Connect this desktop to CodeLogicX Cloud.",
+    "connect-service": "Connect this CodeLogicX Desktop IDE to the cloud workspace.",
     compass:
       "Run standalone sales and CRM workflow prototypes without connecting to CodeLogicX tasks.",
     docker: "Inspect services and run approved Docker operations.",

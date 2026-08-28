@@ -1445,6 +1445,11 @@ button.tree-row:hover,
   padding: 18px 20px 22px;
   border-top: 1px solid #e0e2e5;
 }
+.app-drawer .drawer-connect-service {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border-top: 1px solid #e0e2e5;
+}
 .drawer-settings h2 {
   gap: 8px;
   margin: 0 0 18px;

@@ -2,6 +2,7 @@ import type { SidemenuItem } from "@codelogicx/ui/blocks/menu/sidemenu/sub/sidem
 import type { TopMenuWorkspaceItem } from "@codelogicx/ui/blocks/menu/sidemenu/top-menu";
 import {
   BookOpenIcon,
+  CableIcon,
   FolderKanbanIcon,
   GitBranchIcon,
   LayoutDashboardIcon,
@@ -73,6 +74,11 @@ const workspaces = Object.freeze([
       default: module.ProjectSyncSettingsWorkspace
     }))
   ),
+  workspace("connect-service", "Connect Service", "Cloud", () =>
+    import("./modules/connect-service").then((module) => ({
+      default: module.ConnectServiceWorkspace
+    }))
+  ),
   workspace("orchestration", "Engineering Command Center", "Orchestration", () =>
     import("./modules/orchestration").then((module) => ({
       default: module.OrchestrationWorkspace
@@ -107,16 +113,15 @@ const workspaces = Object.freeze([
     }))
   ),
   workspace("projects", "Projects", "Work", () =>
-    Promise.all([
-      import("./modules/work-automation"),
-      import("./modules/work-hub")
-    ]).then(([work, hub]) => ({
-      default: () => (
-        <hub.WorkShell current="Projects">
-          <work.WorkAutomationWorkspace />
-        </hub.WorkShell>
-      )
-    }))
+    Promise.all([import("./modules/work-automation"), import("./modules/work-hub")]).then(
+      ([work, hub]) => ({
+        default: () => (
+          <hub.WorkShell current="Projects">
+            <work.WorkAutomationWorkspace />
+          </hub.WorkShell>
+        )
+      })
+    )
   ),
   workspace("project-tree", "Project Tree", "Work", () =>
     import("./modules/project-tree").then((module) => ({
@@ -263,6 +268,12 @@ export const codelogicxWebBundle = Object.freeze({
         isActive: activeWorkspaceId === "docs",
         title: "Docs",
         url: "/app/codelogicx/docs"
+      },
+      {
+        icon: CableIcon,
+        isActive: activeWorkspaceId === "connect-service",
+        title: "Connect Service",
+        url: "/app/codelogicx/connect-service"
       }
     ];
   },

@@ -33,6 +33,7 @@ pub fn run() {
             commands::agent::interrupt_agent_turn,
             commands::agent::answer_agent_approval,
             commands::compass_release::run_compass_release_step,
+            commands::cloud::request_codelogicx_cloud,
             commands::tasks::list_local_tasks,
             commands::tasks::save_local_task,
             commands::tasks::set_local_task_status,

@@ -6,9 +6,11 @@ import type {
   CloudSession,
   CloudTask
 } from "./cloud-types";
+import { invoke } from "@tauri-apps/api/core";
 
 type Envelope<T> = { data: T; success: true } | { error: { message: string }; success: false };
 type PairingPayload = { endpoint: string; secret: string; ticketId: string; version: number };
+type NativeCloudResponse = { body: string; status: number };
 
 const endpointKey = "codelogicx_desktop_cloud_endpoint";
 const tokenKey = "codelogicx_desktop_cloud_session";
@@ -90,15 +92,15 @@ class DesktopCloudApi {
     authenticated = true
   ) {
     const token = localStorage.getItem(tokenKey);
-    const response = await fetch(`${endpoint}${path}`, {
-      ...options,
-      headers: {
-        ...(options.body ? { "Content-Type": "application/json" } : {}),
-        ...(authenticated && token ? { Authorization: `Bearer ${token}` } : {})
-      }
-    });
-    const envelope = (await response.json()) as Envelope<T>;
-    if (!response.ok || !envelope.success) {
+    const authorization = authenticated && token ? `Bearer ${token}` : undefined;
+    const response = await cloudRequest(`${endpoint}${path}`, options, authorization);
+    let envelope: Envelope<T>;
+    try {
+      envelope = JSON.parse(response.body) as Envelope<T>;
+    } catch {
+      throw new Error(`Cloud returned an invalid response (${response.status}).`);
+    }
+    if (response.status < 200 || response.status >= 300 || !envelope.success) {
       throw new Error(envelope.success ? "Cloud request failed." : envelope.error.message);
     }
     return envelope.data;
@@ -111,6 +113,31 @@ class DesktopCloudApi {
 }
 
 export const desktopCloudApi = new DesktopCloudApi();
+
+async function cloudRequest(url: string, options: RequestInit, authorization?: string) {
+  if (isTauriRuntime()) {
+    return invoke<NativeCloudResponse>("request_codelogicx_cloud", {
+      input: {
+        authorization,
+        body: typeof options.body === "string" ? options.body : undefined,
+        method: options.method ?? "GET",
+        url
+      }
+    });
+  }
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(authorization ? { Authorization: authorization } : {})
+    }
+  });
+  return { body: await response.text(), status: response.status };
+}
+
+function isTauriRuntime() {
+  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+}
 
 function settledValue<T>(results: PromiseSettledResult<unknown>[], index: number) {
   const result = results[index];
