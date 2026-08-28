@@ -2,7 +2,6 @@ import { CableIcon, CheckIcon, CopyIcon, RefreshCwIcon, ServerIcon } from "lucid
 import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useEffect, useState } from "react";
 import { createServicePairing, type ServicePairing } from "./connect-service.services";
-import { DesktopReleaseUploader } from "./desktop-release-uploader";
 
 export function ConnectServiceWorkspace() {
   const [pairing, setPairing] = useState<ServicePairing>();
@@ -154,7 +153,6 @@ export function ConnectServiceWorkspace() {
           </p>
         </aside>
       </section>
-      <DesktopReleaseUploader />
     </main>
   );
 }

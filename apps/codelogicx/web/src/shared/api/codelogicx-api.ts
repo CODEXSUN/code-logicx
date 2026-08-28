@@ -43,33 +43,14 @@ export const apiBinaryPost = <T>(path: string, data: Blob, headers: Record<strin
     method: "POST"
   });
 export async function apiPlatformPost<T>(path: string, data?: unknown) {
-  return apiPlatformRequest<T>(path, { body: JSON.stringify(data ?? {}), method: "POST" });
-}
-export async function apiPlatformGet<T>(path: string) {
-  return apiPlatformRequest<T>(path, { method: "GET" });
-}
-export async function apiPlatformUpload<T>(
-  path: string,
-  data: Blob,
-  headers: Record<string, string> = {}
-) {
-  return apiPlatformRequest<T>(path, {
-    body: data,
-    headers: { "Content-Type": "application/octet-stream", ...headers },
-    method: "POST"
-  });
-}
-async function apiPlatformRequest<T>(path: string, options: RequestInit) {
   const authorization = cxappAuthorization();
   const response = await fetch(`${apiBaseUrl}${path}`, {
-    ...options,
+    body: JSON.stringify(data ?? {}),
     headers: {
-      ...(options.body && !(options.body instanceof Blob)
-        ? { "Content-Type": "application/json" }
-        : {}),
-      ...(authorization ? { Authorization: authorization } : {}),
-      ...options.headers
-    }
+      "Content-Type": "application/json",
+      ...(authorization ? { Authorization: authorization } : {})
+    },
+    method: "POST"
   });
   const text = await response.text();
   if (!text) throw new Error(`CodeLogicX API returned an empty response (${response.status}).`);

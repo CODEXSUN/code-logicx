@@ -24,9 +24,6 @@ const deployBase = join(root, "dist", "deploy", "desktop");
 const deployRoot = join(deployBase, version, "windows-x64");
 const installerName = `CodeLogicX_${version}_x64_en-US.msi`;
 const setupName = `CodeLogicX_Setup_${version}_x64.exe`;
-const releaseBaseUrl = (
-  process.env.DESKTOP_RELEASE_PUBLIC_BASE_URL || "https://cx.codexsun.com/desktop/releases"
-).replace(/\/+$/u, "");
 
 await publishDesktopRelease();
 
@@ -171,7 +168,6 @@ function clearDeployRoot() {
   if (!resolve(deployRoot).startsWith(expectedPrefix)) {
     throw new Error(`Refusing to clear an unexpected release path: ${deployRoot}`);
   }
-  rmSync(deployRoot, { force: true, recursive: true });
   mkdirSync(deployRoot, { recursive: true });
 }
 
@@ -187,7 +183,8 @@ function copyArtifact(source, destination, role) {
 
 function writeUpdaterManifest(installerName) {
   const signature = readFileSync(join(bundleRoot, `${installerName}.sig`), "utf8").trim();
-  const url = `${releaseBaseUrl}/${version}/${installerName}`;
+  const tag = `desktop-v${version}`;
+  const url = `https://github.com/CODEXSUN/code-logicx/releases/download/${tag}/${installerName}`;
   const manifest = {
     version,
     notes: `CodeLogicX ${version}`,

@@ -1,6 +1,6 @@
 {
   "name": "code-logicx",
-  "version": "1.0.93",
+  "version": "1.0.94",
   "private": true,
   "packageManager": "npm@12.0.1",
   "description": "CodeLogicX developer and engineering orchestration workspace",

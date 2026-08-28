@@ -70,12 +70,7 @@ Assert-Equal `
 
 $updater = Get-Content -Raw (Join-Path $releaseRoot "updater\latest.json") | ConvertFrom-Json
 $platform = $updater.platforms."windows-x86_64"
-$releaseBaseUrl = if ($env:DESKTOP_RELEASE_PUBLIC_BASE_URL) {
-  $env:DESKTOP_RELEASE_PUBLIC_BASE_URL.TrimEnd("/")
-} else {
-  "https://cx.codexsun.com/desktop/releases"
-}
-$expectedUrl = "$releaseBaseUrl/$version/$installerName"
+$expectedUrl = "https://github.com/CODEXSUN/code-logicx/releases/download/desktop-v$version/$installerName"
 Assert-Equal $updater.version $version "updater version"
 Assert-Equal $platform.url $expectedUrl "updater URL"
 if ([string]::IsNullOrWhiteSpace($platform.signature)) {

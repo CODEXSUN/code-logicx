@@ -5,31 +5,48 @@ All notable changes to **logicx_code** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.93] - 2026-08-28
-
-### Added
-
-- Added authenticated browser publishing for desktop MSI, updater signature, optional setup EXE,
-  and `latest.json` release metadata.
-- Added chunked desktop uploads and persistent cloud storage under `desktop/release`.
-- Added public immutable versioned downloads and a no-cache updater manifest endpoint.
+## [1.0.94] - 2026-08-28
 
 ### Changed
 
-- Desktop clients now check CodeLogicX cloud first and keep GitHub as a fallback endpoint.
+- Kept GitHub Releases as the only desktop update source.
+- Kept the updater manifest at the GitHub release `latest.json` endpoint.
+- Kept MSI downloads under the `desktop-v<version>` GitHub release tag.
+- Removed the cloud desktop release uploader and cloud release API from the release workflow.
+- Updated web, API, desktop, and mobile version metadata to `1.0.94`.
+
+### Security
+
+- Tauri verifies each downloaded MSI with the configured updater public key.
+- The desktop app requires user approval before it installs and restarts.
+- Windows can request administrator permission during installation.
+
+### Verification
+
+- Passed API, web, and desktop TypeScript and ESLint checks before the version update.
+- Passed the 1.0.93 GitHub-only desktop release artifact check.
+- Confirmed that the generated manifest used the `desktop-v1.0.93` GitHub release URL.
+- The 1.0.94 desktop artifacts and GitHub release are not built or published yet.
+
+## [1.0.93] - 2026-08-28
+
+### Changed
+
+- Desktop clients now check the official GitHub release `latest.json` endpoint.
+- Desktop release manifests now download installers from the `desktop-v<version>` GitHub tag.
 - Windows installation remains user-confirmed and can request administrator permission.
 - Updated web, API, desktop, and mobile version metadata to `1.0.93`.
 
 ### Security
 
-- Desktop release publishing requires an administrator session.
-- The cloud validates the updater URL and exact Tauri signature before publishing metadata.
-- Release metadata becomes public only after its signed installer is stored successfully.
+- Tauri verifies every downloaded updater artifact with the configured public key.
+- Installation starts only after explicit user confirmation.
 
 ### Verification
 
 - Passed API, web, and desktop TypeScript checks.
 - Passed deployment and unified-version checks.
+- Built and validated the MSI, setup launcher, updater signature, and GitHub release manifest.
 - A trusted Authenticode certificate is not installed on this build machine; Windows publisher
   trust remains unavailable until a certificate is supplied.
 

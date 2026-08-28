@@ -1,12 +1,40 @@
 # Changelog
 
-Current version: 1.0.93
-Release tag: v-1.0.93
-Changelog label: v 1.0.93
+Current version: 1.0.94
+Release tag: v-1.0.94
+Changelog label: v 1.0.94
+
+## v-1.0.94
+
+### [v 1.0.94] 2026-08-28 11:50 pm - GitHub desktop updates
+
+#### Database Changes
+
+- Database update: No.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.94.
+- Kept GitHub Releases as the only desktop update source.
+- Kept the updater check on the GitHub release `latest.json` endpoint.
+- Kept MSI downloads under the `desktop-v<version>` GitHub release tag.
+- Removed the cloud desktop release uploader and cloud release API from the release workflow.
+- Kept user approval before installation and restart.
+- Updated web, API, desktop, and mobile version metadata to `1.0.94`.
+
+#### Verification
+
+- Passed Platform API, CodeLogicX web, and Desktop TypeScript and ESLint checks before the
+  version update.
+- Passed the 1.0.93 desktop release artifact check.
+- Confirmed that the 1.0.93 manifest used the `desktop-v1.0.93` GitHub release URL.
+- Passed the unified 1.0.94 repository version check.
+- The 1.0.94 desktop artifacts are not built.
+- The GitHub release is not published.
 
 ## v-1.0.93
 
-### [v 1.0.93] 2026-08-28 11:02 pm - Cloud desktop updates
+### [v 1.0.93] 2026-08-28 11:02 pm - GitHub desktop updates
 
 #### Database Changes
 
@@ -15,13 +43,10 @@ Changelog label: v 1.0.93
 #### App Codebase Changes
 
 - Bumped repository version to 1.0.93.
-- Added administrator-only browser publishing for desktop updater releases.
-- Added 8 MB chunk uploads for Cloudflare Tunnel compatibility.
-- Added persistent desktop release storage under the repository-root
-  `storage/desktop/release/` path to the production Compose service.
-- Added public `latest.json` and immutable versioned Windows download routes.
-- Validated the manifest URL and MSI Tauri signature before atomic publication.
-- Changed Desktop to check `cx.codexsun.com` first and GitHub second.
+- Restored GitHub Releases as the only desktop updater authority.
+- Set Desktop to check the official GitHub `latest.json` endpoint.
+- Set generated manifests to download the MSI from the `desktop-v<version>` GitHub tag.
+- Removed the cloud desktop release uploader and storage API.
 - Kept installation behind explicit user confirmation and the normal Windows permission flow.
 
 #### Verification
@@ -30,14 +55,11 @@ Changelog label: v 1.0.93
 - Passed Platform API, CodeLogicX web, and Desktop ESLint checks.
 - Passed deployment script, unified repository version, and whitespace checks.
 - Built and validated the `CodeLogicX_1.0.93_x64_en-US.msi` installer, setup launcher,
-  updater signature, cloud manifest, release manifest, and checksums.
-- Exercised an administrator upload, publish, manifest fetch, and installer download against the
-  release routes; each operation returned HTTP 200 and `latest.json` returned `Cache-Control:
-  no-store`.
+  updater signature, GitHub updater manifest, release manifest, and checksums.
 - Confirmed that no trusted Authenticode certificate is available in the current Windows user
   certificate store.
 - The Tauri updater signing key remains configured for mandatory update verification.
-- Production upload and updater URLs were not deployed during this local implementation.
+- The GitHub release was not published during this local implementation.
 
 ## v-1.0.92
 
