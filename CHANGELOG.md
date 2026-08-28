@@ -5,6 +5,24 @@ All notable changes to **logicx_code** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.91] - 2026-08-28
+
+### Added
+
+- Added an authenticated mobile release endpoint backed by
+  `storage/mobile/releases/latest.json`.
+- Added an in-app update banner and a manual **Check for updates** action under
+  the mobile Settings menu.
+- Added the installed application version to the mobile connection splash screen.
+
+### Changed
+
+- Mobile release checks now start only after the paired user session is validated.
+- APK download starts only after the user selects the update, followed by the
+  standard Android unknown-source permission and package-installer confirmation.
+- Aligned the Android package version with web, desktop, API, and mobile version
+  `1.0.91` (`versionCode 10091`).
+
 ## [1.0.90] - 2026-08-27
 
 ### Added

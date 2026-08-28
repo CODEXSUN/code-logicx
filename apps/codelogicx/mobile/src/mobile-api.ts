@@ -1,5 +1,6 @@
 import type { Contact, Conversation, ConversationMessage, Idea, IdeaInput, MobileData, ProjectRecord, Session, Todo, TodoInput } from "./mobile-types";
 import { io } from "socket.io-client";
+import type { UpdateManifest } from "./app-updater";
 
 type Envelope<T> = { data: T; success: true } | { error: { message: string }; success: false };
 const tokenKey = "codelogicx_mobile_session";
@@ -52,6 +53,7 @@ export class MobileApi {
   }
 
   getSession(): Promise<Session> { const endpoint = mobileEndpoint(); return this.request<Session>(platformPath("/auth/session", endpoint), {}, true, endpoint); }
+  getMobileRelease(): Promise<UpdateManifest> { const endpoint = mobileEndpoint(); return this.request<UpdateManifest>(platformPath("/auth/mobile-release", endpoint), { cache: "no-store" }, true, endpoint); }
 
   createIdea(input: IdeaInput): Promise<Idea> {
     const categoryColors: Record<string, string> = { Design: "#db2777", Engineering: "#7c3aed", General: "#2563eb", Operations: "#ea580c", Product: "#0891b2", Research: "#4f46e5" };

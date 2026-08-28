@@ -1,7 +1,7 @@
-import { App as CapacitorApp } from "@capacitor/app";
 import { registerPlugin } from "@capacitor/core";
+import { mobileApi } from "./mobile-api";
 
-type UpdateManifest = {
+export type UpdateManifest = {
   apkUrl: string;
   applicationId: "com.codexsun.codelogicx";
   publishedAt: string;
@@ -17,36 +17,22 @@ type AppUpdaterPlugin = {
 const updater = registerPlugin<AppUpdaterPlugin>("AppUpdater");
 let checking = false;
 
-export function startUpdateMonitor() {
-  const initialCheck = window.setTimeout(() => void checkForUpdate(), 2_500);
-  const listener = CapacitorApp.addListener("appStateChange", ({ isActive }) => {
-    if (isActive) void checkForUpdate();
-  });
-  return () => {
-    window.clearTimeout(initialCheck);
-    void listener.then((handle) => handle.remove());
-  };
-}
-
-async function checkForUpdate() {
-  if (checking) return;
+export async function checkForUpdate() {
+  if (checking) return null;
   checking = true;
   try {
-    const response = await fetch(updateManifestUrl(), { cache: "no-store" });
-    if (!response.ok) return;
-    const manifest = await response.json() as UpdateManifest;
-    if (!validManifest(manifest) || compareVersions(manifest.version, __APP_VERSION__) <= 0) return;
-    await updater.install({ sha256: manifest.sha256, url: manifest.apkUrl });
-  } catch (error) {
-    console.warn("CodeLogicX update check did not complete.", error);
+    const manifest = await mobileApi.getMobileRelease();
+    return validManifest(manifest) && compareVersions(manifest.version, __APP_VERSION__) > 0
+      ? manifest
+      : null;
   } finally {
     checking = false;
   }
 }
 
-function updateManifestUrl() {
-  const endpoint = localStorage.getItem("codelogicx_mobile_endpoint") || import.meta.env.VITE_MOBILE_API_URL;
-  return `${new URL(endpoint).origin}/mobile/codelogicx-update.json`;
+export function installUpdate(manifest: UpdateManifest) {
+  if (!validManifest(manifest)) throw new Error("The mobile release details are invalid.");
+  return updater.install({ sha256: manifest.sha256, url: manifest.apkUrl });
 }
 
 function validManifest(value: UpdateManifest) {

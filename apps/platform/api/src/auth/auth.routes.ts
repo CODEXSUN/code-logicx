@@ -1,5 +1,8 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { createHash, randomBytes, randomInt, randomUUID } from "node:crypto";
+import { createReadStream } from "node:fs";
+import { readFile, stat } from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { fail, ok } from "@codelogicx/framework/http";
 import { z } from "zod";
 import { env } from "../env.js";
@@ -20,6 +23,14 @@ const mobilePairingBody = z.union([
 const mobilePairingTickets = new Map<string, MobilePairingTicket>();
 const mobilePairingAttempts = new Map<string, PairingAttemptWindow>();
 const mobilePairingLifetimeMs = 60_000;
+const mobileReleaseSchema = z.object({
+  apkUrl: z.string().url(),
+  applicationId: z.literal("com.codexsun.codelogicx"),
+  publishedAt: z.string().datetime(),
+  sha256: z.string().regex(/^[a-f\d]{64}$/iu),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/u),
+  versionCode: z.number().int().positive()
+}).strict();
 
 export async function registerAuthRoutes(app: FastifyInstance) {
   app.post("/auth/mobile-pairing", async (request, reply) => {
@@ -189,7 +200,64 @@ export async function registerAuthRoutes(app: FastifyInstance) {
     );
   });
 
+  app.get("/auth/mobile-release", async (request, reply) => {
+    if (!authenticatedPayload(request)) {
+      return reply.code(401).send(
+        fail(
+          { code: "AUTH_SESSION_EXPIRED", message: "Session expired. Please sign in again." },
+          { requestId: request.id }
+        )
+      );
+    }
+    try {
+      const release = mobileReleaseSchema.parse(
+        JSON.parse(await readFile(mobileReleasePath(), "utf8"))
+      );
+      return ok(release, { requestId: request.id });
+    } catch {
+      return reply.code(404).send(
+        fail(
+          { code: "MOBILE_RELEASE_NOT_FOUND", message: "No mobile release is available." },
+          { requestId: request.id }
+        )
+      );
+    }
+  });
+
+  app.get<{ Params: { file: string } }>("/mobile/releases/:file", async (request, reply) => {
+    const parsed = z.string().regex(/^code-logicx-\d+\.apk$/u).safeParse(request.params.file);
+    if (!parsed.success) return reply.code(404).send("Release not found.");
+    const release = await currentMobileRelease();
+    if (!release || new URL(release.apkUrl).pathname.split("/").at(-1) !== parsed.data)
+      return reply.code(404).send("Release not found.");
+    const apkPath = resolve(mobileReleaseDirectory(), parsed.data);
+    try {
+      await stat(apkPath);
+    } catch {
+      return reply.code(404).send("Release not found.");
+    }
+    return reply
+      .header("Content-Disposition", `attachment; filename="${parsed.data}"`)
+      .type("application/vnd.android.package-archive")
+      .send(createReadStream(apkPath));
+  });
+
   app.post("/auth/logout", async (request) => ok({ loggedOut: true }, { requestId: request.id }));
+}
+
+function mobileReleasePath() {
+  return resolve(mobileReleaseDirectory(), "latest.json");
+}
+function mobileReleaseDirectory() {
+  const storageRoot = process.env.CODELOGICX_STORAGE_PATH?.trim() || join(process.cwd(), "storage");
+  return resolve(storageRoot, "mobile", "releases");
+}
+async function currentMobileRelease() {
+  try {
+    return mobileReleaseSchema.parse(JSON.parse(await readFile(mobileReleasePath(), "utf8")));
+  } catch {
+    return null;
+  }
 }
 
 function bearerToken(request: FastifyRequest) {

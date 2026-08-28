@@ -7,6 +7,12 @@ button { font: inherit; }
 .top-actions button { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 12px; background: transparent; color: #475569; }
 .top-actions ion-icon { font-size: 22px; }
 .page-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.mobile-update-banner { display: grid; grid-template-columns: 30px 1fr 18px; align-items: center; gap: 10px; width: calc(100% - 28px); max-width: 652px; min-height: 60px; padding: 10px 14px; margin: 12px auto 0; text-align: left; border: 1px solid #acd3cd; border-radius: 14px; background: #e4f4f1; color: var(--brand); box-shadow: 0 5px 16px rgba(0,109,97,.08); }
+.mobile-update-banner > ion-icon:first-child { padding: 7px; border-radius: 10px; background: white; font-size: 18px; }
+.mobile-update-banner span { display: grid; gap: 3px; }
+.mobile-update-banner strong { color: #134e4a; font-size: 13px; }
+.mobile-update-banner small { color: #47716d; font-size: 10px; }
+.mobile-update-banner:disabled { opacity: .7; }
 .mobile-page { display: grid; gap: 18px; width: 100%; max-width: 680px; min-height: 100%; padding: 20px 16px 96px; margin: 0 auto; }
 .mobile-page > header { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
 .mobile-page > header p, .login-page > div p { margin: 0 0 5px; color: var(--brand); font-size: 11px; font-weight: 800; letter-spacing: .16em; }
@@ -222,6 +228,9 @@ button { font: inherit; }
 .mobile-drawer nav .setting-switch.is-on { background: var(--brand); }
 .mobile-drawer nav .setting-switch.is-on i { transform: translateX(16px); }
 .mobile-drawer nav .compact-submenu { grid-template-columns: 26px 1fr; min-height: 44px; padding-left: 18px; }
+.mobile-drawer nav .compact-submenu > span { display: grid; gap: 2px; }
+.mobile-drawer nav .compact-submenu strong { color: var(--ink); font-size: 13px; }
+.mobile-drawer nav .compact-submenu small { color: var(--muted); font-size: 10px; font-weight: 500; }
 .drawer-settings { display: grid; gap: 8px; padding: 2px 8px 10px; }
 .drawer-settings h2 { display: flex; align-items: center; gap: 10px; margin: 0; color: #475569; font-size: 13px; }
 .drawer-settings h2 ion-icon { font-size: 18px; }
@@ -265,11 +274,12 @@ button { font: inherit; }
 .login-page form > button { min-height: 52px; border: 0; border-radius: 13px; background: var(--brand); color: white; font-weight: 800; }
 .login-page form > button.development-login { background: transparent; color: var(--brand); border: 1px solid #9bc7c0; }
 .login-error { color: #c62828; font-size: 13px; }
-.connect-page { display: grid; grid-template-rows: 1fr auto auto 1fr; justify-items: center; width: 100%; min-height: 100%; padding: calc(32px + env(safe-area-inset-top)) 28px calc(32px + env(safe-area-inset-bottom)); background: var(--surface); }
+.connect-page { position: relative; display: grid; grid-template-rows: 1fr auto auto 1fr; justify-items: center; width: 100%; min-height: 100%; padding: calc(32px + env(safe-area-inset-top)) 28px calc(32px + env(safe-area-inset-bottom)); background: var(--surface); }
 .connect-logo { align-self: end; display: grid; place-items: center; width: 150px; height: 150px; margin-bottom: 54px; border-radius: 42px; background: white; box-shadow: 0 20px 55px rgba(15,23,42,.12); animation: connect-logo-float 3.2s ease-in-out infinite; }
 .connect-logo img { width: 100px; height: 100px; object-fit: contain; }
 .connect-page > button { width: min(100%, 360px); min-height: 56px; border: 0; border-radius: 16px; background: var(--brand); color: white; font-size: 16px; font-weight: 800; box-shadow: 0 10px 24px rgba(0,109,97,.2); }
 .connect-page > p { width: min(100%, 360px); margin: 14px 0 0; color: #c62828; font-size: 13px; line-height: 1.5; text-align: center; }
+.connect-version { position: absolute; bottom: calc(14px + env(safe-area-inset-bottom)); color: #82939e; font-size: 10px; font-weight: 650; letter-spacing: .04em; }
 @keyframes connect-logo-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-14px) scale(1.025); } }
 @media (prefers-reduced-motion: reduce) { .connect-logo { animation: none; } }
 @media (max-width: 350px) { .metric-grid { grid-template-columns: 1fr; } .mobile-page, .dashboard-page { padding-inline: 10px; } .dashboard-metrics span { font-size: 9px; } .dashboard-launchers { grid-template-columns: repeat(5, 39px); gap: 5px; } .dashboard-launchers button { width: 39px; height: 39px; } }
