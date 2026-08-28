@@ -12,6 +12,7 @@ import {
 import { Button } from "@codelogicx/ui/components/button";
 import { WorkspaceStatusBadge } from "@codelogicx/ui/workspace/status";
 import type { ProjectManagerRecord } from "../project-manager/project-manager.types";
+import { recordProgress } from "../project-manager/project-manager.progress";
 import { ProjectDevelopmentTabs } from "./work-automation.project-development";
 
 type ProjectDashboardProps = {
@@ -39,7 +40,7 @@ export function ProjectDashboard({
     .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
   const completed = descendants.filter((record) => isCompleted(record.status)).length;
   const blocked = descendants.filter((record) => record.status === "blocked").length;
-  const progress = descendants.length ? Math.round((completed / descendants.length) * 100) : 0;
+  const progress = descendants.length ? recordProgress(project, [project, ...descendants]) : 0;
   const recent = [project, ...descendants]
     .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))
     .slice(0, 6);

@@ -24,6 +24,7 @@ export function formFromRecord(record?: ProjectManagerRecord | null): ProjectMan
   return {
     assignee: record?.assignee ?? "",
     description: record?.description ?? "",
+    dependencyIds: record?.dependencyIds ?? [],
     dueDate: record?.dueDate ?? "",
     key: record?.key ?? "",
     lane: record?.lane ?? "",
@@ -48,6 +49,7 @@ export function payloadFromForm(form: ProjectManagerForm) {
   return {
     assignee: form.assignee.trim(),
     description: form.description.trim(),
+    dependencyIds: form.dependencyIds,
     dueDate: form.dueDate.trim(),
     key: form.key.trim(),
     lane: form.lane.trim(),

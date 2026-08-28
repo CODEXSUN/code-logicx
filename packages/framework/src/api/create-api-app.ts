@@ -31,10 +31,12 @@ export async function createApiApp(options: CreateApiAppOptions): Promise<Fastif
     logger: options.environment === "development" ? false : { level: "warn" }
   });
 
-  app.addHook("onRoute", (route) => {
-    const methods = Array.isArray(route.method) ? route.method.join(",") : route.method;
-    console.info(`[route.registered] ${methods} ${route.url}`);
-  });
+  if (process.env.CODELOGICX_LOG_REGISTERED_ROUTES === "1") {
+    app.addHook("onRoute", (route) => {
+      const methods = Array.isArray(route.method) ? route.method.join(",") : route.method;
+      console.info(`[route.registered] ${methods} ${route.url}`);
+    });
+  }
 
   await app.register(cors, {
     credentials: true,

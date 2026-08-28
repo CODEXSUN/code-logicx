@@ -6,6 +6,8 @@ import {
   WorkspaceTablePanel
 } from "@codelogicx/ui/workspace/table";
 import type { ProjectManagerRecord } from "../project-manager/project-manager.types";
+import { recordProgress } from "../project-manager/project-manager.progress";
+import { RoadmapVisual } from "./work-automation.roadmap-visual";
 
 export type WorkflowView = "automation" | "gantt" | "kanban" | "reviews" | "roadmap" | "timeline";
 export type WorkflowRecords = {
@@ -21,7 +23,12 @@ export function RoadmapStatistics({ records }: { records: WorkflowRecords }) {
   const completed = all.filter((record) => doneStatuses.includes(record.status)).length;
   const blocked = all.filter((record) => record.status === "blocked").length;
   const overdue = all.filter((record) => isOverdue(record)).length;
-  const completion = percentage(completed, all.length);
+  const completion = records.issues.length
+    ? Math.round(
+        records.issues.reduce((total, issue) => total + recordProgress(issue, all), 0) /
+          records.issues.length
+      )
+    : percentage(completed, all.length);
   const inProgress = all.filter((record) =>
     ["active", "assigned", "in-progress", "in-review"].includes(record.status)
   ).length;
@@ -131,197 +138,12 @@ function DeliveryHierarchy({
   onEditRecord: (record: ProjectManagerRecord) => void;
   onAgentRecord: (record: ProjectManagerRecord) => void;
 }) {
-  const rows = buildHierarchyRows(records);
   return (
-    <div>
-      <div className="mb-4">
-        <h3 className="font-semibold">Delivery hierarchy</h3>
-        <p className="text-sm text-muted-foreground">
-          Trace the selected module through its linked tasks, actions, and reviews.
-        </p>
-      </div>
-      <WorkspaceTablePanel>
-        <div className="overflow-x-auto">
-          <table
-            aria-label="Selected module delivery hierarchy"
-            className="w-full min-w-[720px] table-fixed border-collapse text-sm"
-          >
-            <thead>
-              <tr>
-                <WorkspaceTableHeaderCell className="w-14 border text-center">
-                  #
-                </WorkspaceTableHeaderCell>
-                <WorkspaceTableHeaderCell className="w-1/3 border">Task</WorkspaceTableHeaderCell>
-                <WorkspaceTableHeaderCell className="w-1/3 border">
-                  Action
-                </WorkspaceTableHeaderCell>
-                <WorkspaceTableHeaderCell className="w-1/3 border">Review</WorkspaceTableHeaderCell>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, index) => (
-                <tr key={row.key}>
-                  <td className="border bg-muted/10 px-3 py-3 text-center align-top text-xs text-muted-foreground">
-                    {index + 1}
-                  </td>
-                  <HierarchyCell
-                    cell={row.task}
-                    emptyLabel="No tasks"
-                    onEditRecord={onEditRecord}
-                    onAgentRecord={onAgentRecord}
-                  />
-                  <HierarchyCell
-                    cell={row.activity}
-                    emptyLabel="No actions"
-                    onEditRecord={onEditRecord}
-                    onAgentRecord={onAgentRecord}
-                  />
-                  <HierarchyCell
-                    cell={row.review}
-                    emptyLabel="No reviews"
-                    onEditRecord={onEditRecord}
-                    onAgentRecord={onAgentRecord}
-                  />
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {!rows.length ? (
-          <WorkspaceTableEmptyState>No module workflow found.</WorkspaceTableEmptyState>
-        ) : null}
-      </WorkspaceTablePanel>
-    </div>
-  );
-}
-
-type HierarchyCellData = {
-  record: ProjectManagerRecord;
-  rowSpan: number;
-};
-type HierarchyRow = {
-  activity?: HierarchyCellData | null;
-  key: string;
-  review?: HierarchyCellData | null;
-  task?: HierarchyCellData | null;
-};
-
-function buildHierarchyRows(records: WorkflowRecords) {
-  const rows: HierarchyRow[] = [];
-  for (const issue of hierarchyOrder(records.issues)) {
-    const tasks = hierarchyOrder(records.tasks.filter((task) => belongsTo(task, issue)));
-    if (!tasks.length) {
-      rows.push({
-        activity: null,
-        key: `${issue.id}:no-task`,
-        review: null,
-        task: null
-      });
-    }
-    for (const task of tasks) {
-      const taskStart = rows.length;
-      const actions = hierarchyOrder(
-        records.actions.filter((action) => belongsTo(action, task))
-      );
-      if (!actions.length) {
-        rows.push({
-          activity: null,
-          key: `${issue.id}:${task.id}:no-activity`,
-          review: null
-        });
-      }
-      for (const activity of actions) {
-        const activityStart = rows.length;
-        const reviews = hierarchyOrder(
-          records.reviews.filter((review) => belongsTo(review, activity))
-        );
-        if (!reviews.length) {
-          rows.push({
-            key: `${issue.id}:${task.id}:${activity.id}:no-review`,
-            review: null
-          });
-        } else {
-          for (const review of reviews) {
-            rows.push({
-              key: `${issue.id}:${task.id}:${activity.id}:${review.id}`,
-              review: { record: review, rowSpan: 1 }
-            });
-          }
-        }
-        const activityRow = rows[activityStart];
-        if (activityRow) {
-          rows[activityStart] = {
-            ...activityRow,
-            activity: {
-              record: activity,
-              rowSpan: rows.length - activityStart
-            }
-          };
-        }
-      }
-      const taskRow = rows[taskStart];
-      if (taskRow) {
-        rows[taskStart] = {
-          ...taskRow,
-          task: {
-            record: task,
-            rowSpan: rows.length - taskStart
-          }
-        };
-      }
-    }
-  }
-  return rows;
-}
-
-function HierarchyCell({
-  cell,
-  emptyLabel,
-  onEditRecord,
-  onAgentRecord
-}: {
-  cell: HierarchyCellData | null | undefined;
-  emptyLabel: string;
-  onEditRecord: (record: ProjectManagerRecord) => void;
-  onAgentRecord: (record: ProjectManagerRecord) => void;
-}) {
-  if (cell === undefined) return null;
-  if (cell === null) {
-    return (
-      <td className="border bg-muted/10 px-4 py-3 align-top text-sm text-muted-foreground">
-        {emptyLabel}
-      </td>
-    );
-  }
-  return (
-    <td className="border bg-card px-4 py-3 align-top" rowSpan={cell.rowSpan}>
-      <button
-        className="cursor-pointer text-left font-medium hover:underline"
-        type="button"
-        onClick={() => onEditRecord(cell.record)}
-      >
-        {cell.record.title}
-      </button>
-      <div className="mt-1 font-mono text-xs text-muted-foreground">{cell.record.key}</div>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <WorkspaceStatusBadge label={pretty(cell.record.status)} tone={tone(cell.record.status)} />
-        <AgentButton onSelect={() => onAgentRecord(cell.record)} />
-      </div>
-    </td>
-  );
-}
-
-function hierarchyOrder(records: ProjectManagerRecord[]) {
-  return [...records].sort(
-    (left, right) =>
-      left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id)
-  );
-}
-
-function belongsTo(child: ProjectManagerRecord, parent: ProjectManagerRecord) {
-  return (
-    child.referenceType === parent.kind &&
-    (child.referenceId === parent.id || child.referenceId === parent.key)
+    <RoadmapVisual
+      onAgentRecord={onAgentRecord}
+      onEditRecord={onEditRecord}
+      records={records}
+    />
   );
 }
 
@@ -344,13 +166,39 @@ function Gantt({
     : addDays(start, 30);
   const end = new Date(Math.min(rawEnd.getTime(), addDays(start, 120).getTime()));
   const dayCount = Math.max(30, dateDiff(start, end) + 1);
+  const ticks = timelineTicks(start, dayCount);
+  const timelineGrid = {
+    backgroundImage: "linear-gradient(to right, hsl(var(--border) / 0.55) 1px, transparent 1px)",
+    backgroundSize: `${100 / dayCount}% 100%`
+  };
   return (
     <WorkspaceTablePanel>
       <table className="w-full min-w-[1180px] table-fixed text-sm">
         <thead>
           <tr>
             <WorkspaceTableHeaderCell className="w-72">Work item</WorkspaceTableHeaderCell>
-            <WorkspaceTableHeaderCell>{dayCount}-day module schedule</WorkspaceTableHeaderCell>
+            <WorkspaceTableHeaderCell>
+              <span>{dayCount}-day module schedule</span>
+              <div className="relative mt-2 h-8 border-t border-border/50" style={timelineGrid}>
+                {ticks.map((tick) => (
+                  <span
+                    className="absolute top-1 whitespace-nowrap text-[10px] font-medium normal-case tracking-normal text-muted-foreground/55"
+                    key={tick.offset}
+                    style={{
+                      left: `${tick.position}%`,
+                      transform:
+                        tick.position === 0
+                          ? "none"
+                          : tick.position === 100
+                            ? "translateX(-100%)"
+                            : "translateX(-50%)"
+                    }}
+                  >
+                    {tick.label}
+                  </span>
+                ))}
+              </div>
+            </WorkspaceTableHeaderCell>
           </tr>
         </thead>
         <tbody>
@@ -359,6 +207,20 @@ function Gantt({
             const itemEnd = parseDate(record.dueDate || record.startDate);
             const offset = clamp(dateDiff(start, itemStart), 0, dayCount - 1);
             const duration = clamp(dateDiff(itemStart, itemEnd) + 1, 1, dayCount - offset);
+            const dependencyDates = record.dependencyIds
+              .map((id) => records.find((candidate) => candidate.id === id))
+              .filter((candidate): candidate is ProjectManagerRecord => Boolean(candidate))
+              .map((dependency) => parseDate(dependency.dueDate || dependency.startDate));
+            const dependencyOffset = dependencyDates.length
+              ? clamp(
+                  dateDiff(
+                    start,
+                    new Date(Math.max(...dependencyDates.map((date) => date.getTime())))
+                  ),
+                  0,
+                  dayCount - 1
+                )
+              : null;
             return (
               <tr className="border-b last:border-0" key={record.id}>
                 <td className="px-4 py-3">
@@ -367,14 +229,33 @@ function Gantt({
                     <span className="truncate font-medium">{record.title}</span>
                   </div>
                   <div className="mt-1 font-mono text-xs text-muted-foreground">{record.key}</div>
+                  {record.kind === "task" && record.dependencyIds.length ? (
+                    <div className="mt-1 text-[11px] text-muted-foreground">
+                      Depends on {record.dependencyIds.length} task
+                      {record.dependencyIds.length === 1 ? "" : "s"}
+                    </div>
+                  ) : null}
                   <div className="mt-2">
                     <AgentButton onSelect={() => onAgentRecord(record)} />
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="relative h-8 rounded bg-muted/50">
+                  <div
+                    className="relative h-10 overflow-hidden rounded-sm bg-muted/25"
+                    style={timelineGrid}
+                  >
+                    {dependencyOffset !== null ? (
+                      <span
+                        className="absolute top-1 border-t-2 border-dashed border-amber-500/70"
+                        style={{
+                          left: `${(Math.min(dependencyOffset, offset) / dayCount) * 100}%`,
+                          width: `${(Math.abs(offset - dependencyOffset) / dayCount) * 100}%`
+                        }}
+                        title="Dependency link"
+                      />
+                    ) : null}
                     <div
-                      className="absolute top-1 h-6 rounded bg-primary/80 px-2 text-xs leading-6 text-primary-foreground"
+                      className="absolute top-2 h-6 overflow-hidden rounded-sm bg-primary/80 px-2 text-xs leading-6 text-primary-foreground shadow-sm"
                       style={{
                         left: `${(offset / dayCount) * 100}%`,
                         maxWidth: "100%",
@@ -669,6 +550,25 @@ function formatDate(value: string) {
         year: "numeric"
       }).format(parseDate(value))
     : "No date";
+}
+function timelineTicks(start: Date, dayCount: number) {
+  const interval = dayCount <= 31 ? 5 : dayCount <= 62 ? 10 : 20;
+  const offsets = Array.from(
+    { length: Math.floor((dayCount - 1) / interval) + 1 },
+    (_, index) => index * interval
+  );
+  if (offsets.at(-1) !== dayCount - 1) offsets.push(dayCount - 1);
+  return offsets.map((offset) => {
+    const date = addDays(start, offset);
+    return {
+      label: new Intl.DateTimeFormat("en-IN", {
+        day: "2-digit",
+        month: "short"
+      }).format(date),
+      offset,
+      position: (offset / (dayCount - 1)) * 100
+    };
+  });
 }
 function pretty(value: string) {
   return value

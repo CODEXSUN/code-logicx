@@ -61,6 +61,7 @@ export class ProjectManagerService {
       id: newUuid(),
       ...(kind === "project" ? { status: "new" } : kind === "issue" ? { status: "open" } : {})
     });
+    await this.validateTaskDependencies(record);
     if (await this.repository.itemKeyExists(kind, record.key)) {
       throw AppError.conflict(`${kind} key already exists.`);
     }
@@ -83,6 +84,7 @@ export class ProjectManagerService {
       ...(kind === "project" ? { status: current.status } : {}),
       updatedAt: now()
     });
+    await this.validateTaskDependencies(next);
     if (await this.repository.itemKeyExists(kind, next.key, id)) {
       throw AppError.conflict(`${kind} key already exists.`);
     }
@@ -371,6 +373,34 @@ export class ProjectManagerService {
     return record;
   }
 
+  private async validateTaskDependencies(record: ProjectManagerRecord) {
+    if (record.kind !== "task") {
+      if (record.dependencyIds.length) {
+        throw AppError.validation("Dependencies are supported only for tasks.");
+      }
+      return;
+    }
+    if (record.dependencyIds.includes(record.id)) {
+      throw AppError.validation("A task cannot depend on itself.");
+    }
+    const tasks = await this.repository.list("task");
+    const taskById = new Map(tasks.map((task) => [task.id, task]));
+    for (const dependencyId of record.dependencyIds) {
+      const dependency = taskById.get(dependencyId);
+      if (!dependency) throw AppError.validation("A selected task dependency does not exist.");
+      if (
+        dependency.referenceId !== record.referenceId ||
+        dependency.referenceType !== record.referenceType
+      ) {
+        throw AppError.validation("Task dependencies must belong to the same module.");
+      }
+    }
+    taskById.set(record.id, record);
+    if (hasDependencyPath(record.id, record.id, taskById, new Set())) {
+      throw AppError.validation("Task dependencies would create a cycle.");
+    }
+  }
+
   private async validateGroupParents(record: ProjectManagerRegistryGroup) {
     const platform = await this.repository.findRegistryPlatform(record.platformId);
     if (!platform) throw AppError.validation("Selected Platform does not exist.");
@@ -418,6 +448,7 @@ function normalizeRecord(
     assignee: input.assignee ?? "",
     createdAt: input.createdAt ?? timestamp,
     description: input.description ?? "",
+    dependencyIds: [...new Set(input.dependencyIds ?? [])],
     dueDate: input.dueDate ?? "",
     id: required(input.id, "id"),
     key: required(input.key, "key"),
@@ -572,6 +603,22 @@ function required(value: unknown, fieldName: string) {
     throw AppError.validation(`${fieldName} is required.`);
   }
   return value.trim();
+}
+
+function hasDependencyPath(
+  startId: string,
+  targetId: string,
+  tasks: Map<string, ProjectManagerRecord>,
+  visited: Set<string>
+): boolean {
+  if (visited.has(startId)) return false;
+  visited.add(startId);
+  const task = tasks.get(startId);
+  if (!task) return false;
+  return task.dependencyIds.some(
+    (dependencyId) =>
+      dependencyId === targetId || hasDependencyPath(dependencyId, targetId, tasks, visited)
+  );
 }
 
 function withoutUndefined<T extends object>(

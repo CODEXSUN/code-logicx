@@ -1,6 +1,6 @@
 {
   "name": "@codelogicx/framework",
-  "version": "1.0.90",
+  "version": "1.0.91",
   "private": true,
   "description": "CodeLogicX-owned framework runtime and stable application contracts",
   "type": "module",

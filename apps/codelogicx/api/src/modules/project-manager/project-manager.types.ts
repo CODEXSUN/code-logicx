@@ -15,6 +15,7 @@ export type ProjectManagerRecord = {
   assignee: string;
   createdAt: string;
   description: string;
+  dependencyIds: string[];
   dueDate: string;
   id: string;
   key: string;

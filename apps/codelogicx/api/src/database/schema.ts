@@ -555,6 +555,7 @@ export type ProjectManagerItemsTable = SyncColumns & {
   assignee: string;
   created_at: TimestampColumn;
   description: string;
+  dependencies_json: string;
   due_date: string;
   id: Generated<number>;
   item_key: string;

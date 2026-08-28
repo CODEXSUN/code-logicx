@@ -5,7 +5,7 @@ import type { CodeLogicXDatabase } from "../../database/schema.js";
 export const projectManagerMigration = {
   description:
     "Project Manager records, attachments, project roadmaps, registry hierarchy, and audit activity.",
-  key: "codelogicx.project-manager.sql.v7"
+  key: "codelogicx.project-manager.sql.v8"
 } as const;
 
 export async function migrateProjectManagerModule(database: Kysely<CodeLogicXDatabase>) {
@@ -19,6 +19,7 @@ export async function migrateProjectManagerModule(database: Kysely<CodeLogicXDat
       item_key VARCHAR(160) NOT NULL,
       title VARCHAR(240) NOT NULL,
       description TEXT NOT NULL,
+      dependencies_json LONGTEXT NOT NULL,
       assignee VARCHAR(160) NOT NULL DEFAULT '',
       due_date VARCHAR(16) NOT NULL DEFAULT '',
       lane VARCHAR(120) NOT NULL DEFAULT '',
@@ -62,6 +63,11 @@ export async function migrateProjectManagerModule(database: Kysely<CodeLogicXDat
   await sql`
     ALTER TABLE codelogicx_project_manager_items
     ADD COLUMN IF NOT EXISTS start_date VARCHAR(16) NOT NULL DEFAULT '' AFTER sort_order
+  `.execute(database);
+
+  await sql`
+    ALTER TABLE codelogicx_project_manager_items
+    ADD COLUMN IF NOT EXISTS dependencies_json LONGTEXT NOT NULL DEFAULT '[]' AFTER description
   `.execute(database);
 
   await sql`

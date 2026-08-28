@@ -13,6 +13,7 @@ import { WorkspaceRowActions } from "@codelogicx/ui/workspace/row-actions";
 import { WorkspaceStatusBadge } from "@codelogicx/ui/workspace/status";
 import { WorkspaceTableEmptyState } from "@codelogicx/ui/workspace/table";
 import type { ProjectManagerRecord } from "../project-manager/project-manager.types";
+import { recordProgress } from "../project-manager/project-manager.progress";
 
 type ProjectCardListProps = {
   loading: boolean;
@@ -205,7 +206,6 @@ export function ProjectCardList({
 
 function projectSummary(project: ProjectManagerRecord, records: ProjectManagerRecord[]) {
   const descendants = records.filter((record) => belongsToProject(record, project, records));
-  const completed = descendants.filter((record) => isCompleted(record.status)).length;
   const recent = descendants.sort(
     (left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt),
   ).slice(0, 5);
@@ -215,7 +215,9 @@ function projectSummary(project: ProjectManagerRecord, records: ProjectManagerRe
   return {
     actions,
     recent: recent.length ? recent : [project],
-    progress: descendants.length ? Math.round((completed / descendants.length) * 100) : projectProgress(project.status),
+    progress: descendants.length
+      ? recordProgress(project, [project, ...descendants])
+      : projectProgress(project.status),
     reviews,
     tasks,
   };

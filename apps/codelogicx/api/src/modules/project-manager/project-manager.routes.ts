@@ -42,6 +42,7 @@ const itemSaveSchema = z
     active: z.boolean().optional(),
     assignee: z.string().optional(),
     description: z.string().optional(),
+    dependencyIds: z.array(z.string().min(1).max(160)).max(100).optional(),
     dueDate: z.string().optional(),
     key: z.string().min(1),
     lane: z.string().optional(),

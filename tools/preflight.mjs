@@ -131,19 +131,27 @@ function parseRequiredPort(value, envKey) {
 
 function ensurePlatformApiDependencies() {
   console.log("  - Checking API package builds");
-  ensureLinkedPackageBuild("@codelogicx/framework", "packages/framework");
-  ensureLinkedPackageBuild("@codelogicx/codelogicx-api", "apps/codelogicx/api");
+  ensureLinkedPackageBuild({
+    name: "@codelogicx/framework",
+    outputPath: "dist/packages/framework",
+    packagePath: "packages/framework"
+  });
+  ensureLinkedPackageBuild({
+    name: "@codelogicx/codelogicx-api",
+    outputPath: "dist/codelogicx/api",
+    packagePath: "apps/codelogicx/api"
+  });
 }
 
-function ensureLinkedPackageBuild(packageName, packagePath) {
+function ensureLinkedPackageBuild({ name, outputPath, packagePath }) {
   const absolutePackagePath = resolve(root, packagePath);
   const srcPath = join(absolutePackagePath, "src");
-  const distPath = resolve(root, "dist", "packages", packageName.split("/").at(-1));
+  const distPath = resolve(root, outputPath);
   const packageJsonPath = join(absolutePackagePath, "package.json");
   const tsconfigPath = join(absolutePackagePath, "tsconfig.json");
 
   if (!existsSync(distPath)) {
-    buildLinkedPackage(packageName, absolutePackagePath, "dist missing");
+    buildLinkedPackage(name, absolutePackagePath, distPath, "dist missing");
     return;
   }
 
@@ -151,17 +159,20 @@ function ensureLinkedPackageBuild(packageName, packagePath) {
   const distTime = newestMtime([distPath]);
 
   if (sourceTime > distTime) {
-    buildLinkedPackage(packageName, absolutePackagePath, "source changed");
+    buildLinkedPackage(name, absolutePackagePath, distPath, "source changed");
     return;
   }
 
-  console.log(`  ok ${packageName} build is current`);
+  console.log(`  ok ${name} build is current`);
 }
 
-function buildLinkedPackage(packageName, packagePath, reason) {
+function buildLinkedPackage(packageName, packagePath, distPath, reason) {
   const startedAt = Date.now();
   console.log(`  build ${packageName} (${reason})`);
   runNpm(["run", "build", "--prefix", packagePath]);
+  if (!existsSync(distPath)) {
+    throw new Error(`${packageName} build did not create ${distPath}`);
+  }
   console.log(`  ok ${packageName} built in ${Date.now() - startedAt}ms`);
 }
 

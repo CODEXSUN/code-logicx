@@ -1,8 +1,47 @@
 # Changelog
 
-Current version: 1.0.90
-Release tag: v-1.0.90
-Changelog label: v 1.0.90
+Current version: 1.0.91
+Release tag: v-1.0.91
+Changelog label: v 1.0.91
+
+## v-1.0.91
+
+### [v 1.0.91] 2026-08-28 4:19 pm - Project planning dependencies and progress
+
+#### Database Changes
+
+- Database update: Yes.
+- Added the `dependencies_json` field to Project Manager items.
+- Added migration `codelogicx.project-manager.sql.v8` for existing databases.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.91.
+- Added the live Project Tree workspace for projects, modules, tasks, actions,
+  reviews, roadmaps, and Gantt schedules.
+- Added persistent task dependencies with checks for missing tasks, self-links,
+  cross-module links, and dependency cycles.
+- Added dependency selection to the inline task editor.
+- Added recursive progress rollups to Project Tree rows, project cards, project
+  dashboards, roadmaps, and Gantt schedules.
+- Added dependency details and dependency lines to the Gantt timeline.
+- Added live roadmap progress visuals and module performance statistics.
+- Added consistent inline create and edit forms for Project Tree records.
+- Added hierarchy reference numbers, count badges, status badges, and level labels.
+
+#### Verification
+
+- Passed the CodeLogicX API and web TypeScript checks.
+- Passed the CodeLogicX web ESLint check and focused Project Manager API ESLint check.
+- Passed the repository-boundary check and whitespace check.
+- Applied migration `codelogicx.project-manager.sql.v8` on the local database.
+- Verified 23 live Project Tree rows and progress badges in an authenticated browser.
+- Verified the dependency editor, roadmap statistics, and Gantt timeline in the browser.
+- Did not change existing project records during browser verification.
+- The full module-boundary check still reports the existing mobile Vite import of
+  its Platform host.
+- The full API ESLint check still reports the existing control-regex issue in
+  `apps/codelogicx/api/src/modules/ideas/ideas.storage.ts`.
 
 ## v-1.0.90
 

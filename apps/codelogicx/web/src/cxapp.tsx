@@ -8,6 +8,7 @@ import {
   LightbulbIcon,
   ListTodoIcon,
   MessagesSquareIcon,
+  NetworkIcon,
   WrenchIcon
 } from "lucide-react";
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
@@ -115,6 +116,11 @@ const workspaces = Object.freeze([
           <work.WorkAutomationWorkspace />
         </hub.WorkShell>
       )
+    }))
+  ),
+  workspace("project-tree", "Project Tree", "Work", () =>
+    import("./modules/project-tree").then((module) => ({
+      default: module.ProjectTreeWorkspace
     }))
   ),
   workspace("roadmap", "Roadmap", "Work", () =>
@@ -239,6 +245,12 @@ export const codelogicxWebBundle = Object.freeze({
         isActive: activeWorkspaceId === "projects",
         title: "Project",
         url: "/app/codelogicx/projects"
+      },
+      {
+        icon: NetworkIcon,
+        isActive: activeWorkspaceId === "project-tree",
+        title: "Project Tree",
+        url: "/app/codelogicx/project-tree"
       },
       {
         icon: ListTodoIcon,
