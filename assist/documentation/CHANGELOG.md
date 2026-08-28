@@ -1,8 +1,43 @@
 # Changelog
 
-Current version: 1.0.92
-Release tag: v-1.0.92
-Changelog label: v 1.0.92
+Current version: 1.0.93
+Release tag: v-1.0.93
+Changelog label: v 1.0.93
+
+## v-1.0.93
+
+### [v 1.0.93] 2026-08-28 11:02 pm - Cloud desktop updates
+
+#### Database Changes
+
+- Database update: No.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.93.
+- Added administrator-only browser publishing for desktop updater releases.
+- Added 8 MB chunk uploads for Cloudflare Tunnel compatibility.
+- Added persistent desktop release storage under the repository-root
+  `storage/desktop/release/` path to the production Compose service.
+- Added public `latest.json` and immutable versioned Windows download routes.
+- Validated the manifest URL and MSI Tauri signature before atomic publication.
+- Changed Desktop to check `cx.codexsun.com` first and GitHub second.
+- Kept installation behind explicit user confirmation and the normal Windows permission flow.
+
+#### Verification
+
+- Passed Platform API, CodeLogicX web, and Desktop TypeScript checks.
+- Passed Platform API, CodeLogicX web, and Desktop ESLint checks.
+- Passed deployment script, unified repository version, and whitespace checks.
+- Built and validated the `CodeLogicX_1.0.93_x64_en-US.msi` installer, setup launcher,
+  updater signature, cloud manifest, release manifest, and checksums.
+- Exercised an administrator upload, publish, manifest fetch, and installer download against the
+  release routes; each operation returned HTTP 200 and `latest.json` returned `Cache-Control:
+  no-store`.
+- Confirmed that no trusted Authenticode certificate is available in the current Windows user
+  certificate store.
+- The Tauri updater signing key remains configured for mandatory update verification.
+- Production upload and updater URLs were not deployed during this local implementation.
 
 ## v-1.0.92
 

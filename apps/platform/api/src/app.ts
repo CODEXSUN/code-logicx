@@ -30,6 +30,7 @@ import { userModule, userReferenceContract } from "./modules/user/index.js";
 import { registerCodeLogicXAddons } from "./addons/addon-host.js";
 import { closeFileManagerDatabase, fileManagerApiModuleKeys } from "./addons/file-manager-host.js";
 import { configureSocketRedis } from "./realtime/socket-redis.js";
+import { registerDesktopReleaseRoutes } from "./desktop-releases/desktop-release.routes.js";
 
 const modules = [userModule, roleModule, permissionModule, userRoleModule, rolePermissionModule];
 
@@ -83,6 +84,7 @@ export async function createApp() {
   registerRequestLogging(app);
   registerHealthRoute(app, healthChecks);
   await registerAuthRoutes(app);
+  await registerDesktopReleaseRoutes(app);
   await registerModules(
     modules,
     { app },

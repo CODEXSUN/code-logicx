@@ -1,6 +1,6 @@
 {
   "name": "@codelogicx/platform-api",
-  "version": "1.0.92",
+  "version": "1.0.93",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,8 +9,8 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "@codelogicx/codelogicx-api": "1.0.92",
-    "@codelogicx/framework": "1.0.92",
+    "@codelogicx/codelogicx-api": "1.0.93",
+    "@codelogicx/framework": "1.0.93",
     "@codexsun/blog": "*",
     "@codexsun/file-manager": "*",
     "@socket.io/redis-adapter": "^8.3.0",

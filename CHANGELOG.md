@@ -5,6 +5,34 @@ All notable changes to **logicx_code** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.93] - 2026-08-28
+
+### Added
+
+- Added authenticated browser publishing for desktop MSI, updater signature, optional setup EXE,
+  and `latest.json` release metadata.
+- Added chunked desktop uploads and persistent cloud storage under `desktop/release`.
+- Added public immutable versioned downloads and a no-cache updater manifest endpoint.
+
+### Changed
+
+- Desktop clients now check CodeLogicX cloud first and keep GitHub as a fallback endpoint.
+- Windows installation remains user-confirmed and can request administrator permission.
+- Updated web, API, desktop, and mobile version metadata to `1.0.93`.
+
+### Security
+
+- Desktop release publishing requires an administrator session.
+- The cloud validates the updater URL and exact Tauri signature before publishing metadata.
+- Release metadata becomes public only after its signed installer is stored successfully.
+
+### Verification
+
+- Passed API, web, and desktop TypeScript checks.
+- Passed deployment and unified-version checks.
+- A trusted Authenticode certificate is not installed on this build machine; Windows publisher
+  trust remains unavailable until a certificate is supplied.
+
 ## [1.0.92] - 2026-08-28
 
 ### Added

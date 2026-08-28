@@ -24,6 +24,9 @@ const deployBase = join(root, "dist", "deploy", "desktop");
 const deployRoot = join(deployBase, version, "windows-x64");
 const installerName = `CodeLogicX_${version}_x64_en-US.msi`;
 const setupName = `CodeLogicX_Setup_${version}_x64.exe`;
+const releaseBaseUrl = (
+  process.env.DESKTOP_RELEASE_PUBLIC_BASE_URL || "https://cx.codexsun.com/desktop/releases"
+).replace(/\/+$/u, "");
 
 await publishDesktopRelease();
 
@@ -37,17 +40,17 @@ async function publishDesktopRelease() {
     copyArtifact(
       join(targetRoot, "codex-code-mode-host.exe"),
       join("app", "codex-code-mode-host.exe"),
-      "agent-tool-runtime",
+      "agent-tool-runtime"
     ),
     copyArtifact(
       join(targetRoot, "codex-command-runner.exe"),
       join("app", "codex-command-runner.exe"),
-      "agent-sandbox-runner",
+      "agent-sandbox-runner"
     ),
     copyArtifact(
       join(targetRoot, "codex-windows-sandbox-setup.exe"),
       join("app", "codex-windows-sandbox-setup.exe"),
-      "agent-sandbox-setup",
+      "agent-sandbox-setup"
     ),
     copyArtifact(join(targetRoot, "rg.exe"), join("app", "rg.exe"), "agent-search-runtime"),
     copyArtifact(join(bundleRoot, installerName), installerPath, "installer"),
@@ -112,8 +115,15 @@ function buildSetupLauncher(installerPath, outputPath) {
 
 function writeSetupResource(outputPath) {
   const [major, minor, patch] = version.split(".");
-  const icon = join(root, "apps", "codelogicx", "desktop", "src-tauri", "icons", "icon.ico")
-    .replaceAll("\\", "\\\\");
+  const icon = join(
+    root,
+    "apps",
+    "codelogicx",
+    "desktop",
+    "src-tauri",
+    "icons",
+    "icon.ico"
+  ).replaceAll("\\", "\\\\");
   const content = `1 ICON "${icon}"
 1 VERSIONINFO
 FILEVERSION ${major},${minor},${patch},0
@@ -177,8 +187,7 @@ function copyArtifact(source, destination, role) {
 
 function writeUpdaterManifest(installerName) {
   const signature = readFileSync(join(bundleRoot, `${installerName}.sig`), "utf8").trim();
-  const tag = `desktop-v${version}`;
-  const url = `https://github.com/CODEXSUN/code-logicx/releases/download/${tag}/${installerName}`;
+  const url = `${releaseBaseUrl}/${version}/${installerName}`;
   const manifest = {
     version,
     notes: `CodeLogicX ${version}`,

@@ -54,6 +54,7 @@ services:
       CODELOGICX_WORKSPACE_ROOT: /srv/codelogicx/repositories
       CODELOGICX_AGENT_ALLOWED_ROOTS: /srv/codelogicx/repositories
       CODELOGICX_AGENT_WORKTREE_ROOT: /var/lib/codelogicx/worktrees
+      CODELOGICX_STORAGE_PATH: /workspace/codelogicx/storage
     depends_on:
       mariadb:
         condition: service_healthy
@@ -66,6 +67,7 @@ services:
       - codex-state:/var/lib/codelogicx/codex
       - agent-worktrees:/var/lib/codelogicx/worktrees
       - agent-repositories:/srv/codelogicx/repositories
+      - release-storage:/workspace/codelogicx/storage
     networks: [codelogicx]
     healthcheck:
       test:
@@ -117,6 +119,8 @@ volumes:
     name: ${CODELOGICX_AGENT_WORKTREE_VOLUME:-codelogicx-agent-worktrees}
   agent-repositories:
     name: ${CODELOGICX_AGENT_REPOSITORY_VOLUME:-codelogicx-agent-repositories}
+  release-storage:
+    name: ${CODELOGICX_RELEASE_STORAGE_VOLUME:-codelogicx-release-storage}
 
 networks:
   codelogicx:
