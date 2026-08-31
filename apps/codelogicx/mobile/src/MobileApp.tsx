@@ -1,7 +1,7 @@
 import { IonApp, IonIcon, IonSpinner } from "@ionic/react";
 import { BarcodeFormat, BarcodeScanner } from "@capacitor-mlkit/barcode-scanning";
 import { App as CapacitorApp } from "@capacitor/app";
-import { bulbOutline, chatbubbleEllipsesOutline, checkboxOutline, chevronDownOutline, chevronForwardOutline, closeOutline, cloudDownloadOutline, folderOutline, homeOutline, layersOutline, logOutOutline, menuOutline, optionsOutline, refreshOutline, settingsOutline } from "ionicons/icons";
+import { bulbOutline, chatbubbleEllipsesOutline, checkboxOutline, chevronDownOutline, chevronForwardOutline, closeOutline, cloudDownloadOutline, folderOutline, homeOutline, layersOutline, linkOutline, logOutOutline, menuOutline, optionsOutline, refreshOutline, settingsOutline } from "ionicons/icons";
 import { useCallback, useEffect, useState } from "react";
 import { mobileApi } from "./mobile-api";
 import { checkForUpdate, installUpdate, type UpdateManifest } from "./app-updater";
@@ -38,6 +38,7 @@ function MobileDesk({ onSignOut }: { onSignOut: () => void }) {
   const [localBackend, setLocalBackend] = useState(() => mobileApi.usesLocalBackend());
   const [localPending, setLocalPending] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [connectOpen, setConnectOpen] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [update, setUpdate] = useState<UpdateManifest | null>(null);
   const [updateState, setUpdateState] = useState<"idle" | "checking" | "current" | "error" | "installing">("idle");
@@ -89,7 +90,8 @@ function MobileDesk({ onSignOut }: { onSignOut: () => void }) {
     <div className="page-scroll">{update ? <button className="mobile-update-banner" disabled={updateState === "installing"} onClick={() => void beginUpdate()}><IonIcon icon={cloudDownloadOutline}/><span><strong>CodeLogicX {update.version} is ready</strong><small>{updateState === "installing" ? "Opening Android installer…" : "Tap to download and install"}</small></span><IonIcon icon={chevronForwardOutline}/></button> : null}{loading ? <LoadingPage/> : error ? <ErrorPage message={error} retry={() => void load()}/> : renderPage(tab, data, navigate, load, session?.userId ?? "")}</div>
     <nav className="mobile-tabs">{tabs.map((item) => <button className={tab === item.id ? "is-active" : ""} key={item.id} onClick={() => navigate(item.id)}><IonIcon icon={item.icon}/><span>{item.label}</span></button>)}</nav>
     {honeyEnabled && !drawerOpen ? <HoneyPet send={(message, threadId) => mobileApi.sendHoneyMessage(message, threadId)}/> : null}
-    {drawerOpen ? <><button className="drawer-scrim" aria-label="Close menu" onClick={() => setDrawerOpen(false)}/><aside className="mobile-drawer"><header><img alt="CodeLogicX" src="/logo/logo.svg"/><strong>CodeLogicX</strong><button aria-label="Close menu" onClick={() => setDrawerOpen(false)}><IonIcon icon={closeOutline}/></button></header><nav><DrawerItem icon={homeOutline} label="Dashboard" open={() => navigate("home")}/><DrawerItem icon={bulbOutline} label="Ideas" open={() => navigate("ideas")}/><DrawerItem icon={chatbubbleEllipsesOutline} label="Messenger" open={() => navigate("messages")}/><DrawerItem icon={layersOutline} label="Projects" open={() => navigate("projects")}/><DrawerItem icon={checkboxOutline} label="Todos" open={() => navigate("tasks")}/><button className="drawer-settings-trigger" onClick={() => setSettingsOpen((open) => !open)}><IonIcon icon={settingsOutline}/><span>Settings</span><IonIcon className="drawer-chevron" icon={settingsOpen ? chevronDownOutline : chevronForwardOutline}/></button>{settingsOpen ? <div className="drawer-submenu"><SettingSwitch detail="Connected companion" enabled={honeyEnabled} label="Show Honey" toggle={toggleHoney}/><SettingSwitch detail={localPending ? "Connecting…" : "Android emulator · port 9150"} disabled={localPending} enabled={localBackend} label="Local backend" toggle={() => void toggleLocalBackend()}/><button className="compact-submenu" onClick={() => setCompact((value) => !value)}><IonIcon icon={optionsOutline}/><span>{compact ? "Relaxed view" : "Compact view"}</span></button><button className="compact-submenu" disabled={updateState === "checking" || updateState === "installing"} onClick={() => update ? void beginUpdate() : void requestUpdate()}><IonIcon icon={update ? cloudDownloadOutline : refreshOutline}/><span><strong>{update ? `Install ${update.version}` : "Check for updates"}</strong><small>{updateStatus(updateState)}</small></span></button></div> : null}</nav><footer><AccountSummary session={session}/><button onClick={onSignOut}><IonIcon icon={logOutOutline}/><span>Disconnect</span></button></footer></aside></> : null}
+    {drawerOpen ? <><button className="drawer-scrim" aria-label="Close menu" onClick={() => setDrawerOpen(false)}/><aside className="mobile-drawer"><header><img alt="CodeLogicX" src="/logo/logo.svg"/><strong>CodeLogicX</strong><button aria-label="Close menu" onClick={() => setDrawerOpen(false)}><IonIcon icon={closeOutline}/></button></header><nav><DrawerItem icon={homeOutline} label="Dashboard" open={() => navigate("home")}/><DrawerItem icon={bulbOutline} label="Ideas" open={() => navigate("ideas")}/><DrawerItem icon={chatbubbleEllipsesOutline} label="Messenger" open={() => navigate("messages")}/><DrawerItem icon={layersOutline} label="Projects" open={() => navigate("projects")}/><DrawerItem icon={checkboxOutline} label="Todos" open={() => navigate("tasks")}/><DrawerItem icon={linkOutline} label="Connect Service" open={() => { setDrawerOpen(false); setConnectOpen(true); }}/><button className="drawer-settings-trigger" onClick={() => setSettingsOpen((open) => !open)}><IonIcon icon={settingsOutline}/><span>Settings</span><IonIcon className="drawer-chevron" icon={settingsOpen ? chevronDownOutline : chevronForwardOutline}/></button>{settingsOpen ? <div className="drawer-submenu"><SettingSwitch detail="Connected companion" enabled={honeyEnabled} label="Show Honey" toggle={toggleHoney}/><SettingSwitch detail={localPending ? "Connecting…" : "Android emulator · port 9150"} disabled={localPending} enabled={localBackend} label="Local backend" toggle={() => void toggleLocalBackend()}/><button className="compact-submenu" onClick={() => setCompact((value) => !value)}><IonIcon icon={optionsOutline}/><span>{compact ? "Relaxed view" : "Compact view"}</span></button><button className="compact-submenu" disabled={updateState === "checking" || updateState === "installing"} onClick={() => update ? void beginUpdate() : void requestUpdate()}><IonIcon icon={update ? cloudDownloadOutline : refreshOutline}/><span><strong>{update ? `Install ${update.version}` : "Check for updates"}</strong><small>{updateStatus(updateState)}</small></span></button></div> : null}</nav><footer><AccountSummary session={session}/><button onClick={onSignOut}><IonIcon icon={logOutOutline}/><span>Disconnect</span></button></footer></aside></> : null}
+    {connectOpen ? <MobileReconnect onClose={() => setConnectOpen(false)} onConnected={() => { setConnectOpen(false); void load(); }}/> : null}
   </main>;
 }
 
@@ -103,6 +105,24 @@ function MobileConnect({ onConnected }: { onConnected: () => void }) {
   const [error, setError] = useState(""); const [pending, setPending] = useState(false);
   async function scan() { setPending(true); setError(""); try { await ensureScannerModule(); const result = await BarcodeScanner.scan({ formats: [BarcodeFormat.QrCode] }); const value = result.barcodes[0]?.rawValue || result.barcodes[0]?.displayValue; if (!value) throw new Error("No QR code was scanned."); await mobileApi.pair(value); onConnected(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not connect this device."); } finally { setPending(false); } }
   return <main className="connect-page"><div className="connect-logo"><img alt="CodeLogicX" src="/logo/logo.svg"/></div><button disabled={pending} onClick={() => void scan()}>{pending ? <IonSpinner name="crescent"/> : "Scan to connect"}</button>{error ? <p>{error}</p> : null}<small className="connect-version">CodeLogicX v{__APP_VERSION__}</small></main>;
+}
+
+function MobileReconnect({ onClose, onConnected }: { onClose: () => void; onConnected: () => void }) {
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+  async function scan() {
+    setPending(true); setError("");
+    try {
+      await ensureScannerModule();
+      const result = await BarcodeScanner.scan({ formats: [BarcodeFormat.QrCode] });
+      const value = result.barcodes[0]?.rawValue || result.barcodes[0]?.displayValue;
+      if (!value) throw new Error("No QR code was scanned.");
+      await mobileApi.pair(value);
+      onConnected();
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not connect this device."); }
+    finally { setPending(false); }
+  }
+  return <div className="mobile-connect-dialog" role="dialog" aria-modal="true" aria-label="Connect Service"><button aria-label="Close Connect Service" className="mobile-connect-dialog-scrim" onClick={onClose}/><section><button aria-label="Close Connect Service" className="mobile-connect-dialog-close" onClick={onClose}><IonIcon icon={closeOutline}/></button><IonIcon className="mobile-connect-dialog-icon" icon={linkOutline}/><h2>Connect Service</h2><p>Scan a CodeLogicX QR code to securely reconnect this mobile device to your workspace.</p><button className="mobile-connect-dialog-action" disabled={pending} onClick={() => void scan()}>{pending ? <IonSpinner name="crescent"/> : "Scan to connect"}</button>{error ? <small>{error}</small> : null}</section></div>;
 }
 
 async function ensureScannerModule() {

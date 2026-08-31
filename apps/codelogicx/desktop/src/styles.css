@@ -206,6 +206,11 @@ button {
   border-left-color: var(--primary);
   background: var(--secondary);
 }
+.activity-footer {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 6px;
+}
 .side-panel {
   min-width: 0;
   border-right: 1px solid #d9dbde;

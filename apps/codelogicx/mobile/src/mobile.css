@@ -243,6 +243,15 @@ button { font: inherit; }
 .mobile-drawer footer .setting-switch.is-on { background: var(--brand); }
 .mobile-drawer footer .setting-switch.is-on i { transform: translateX(18px); }
 .mobile-drawer footer .setting-switch:disabled { opacity: .55; }
+.mobile-connect-dialog { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 24px; }
+.mobile-connect-dialog-scrim { position: absolute; inset: 0; border: 0; background: rgba(15, 23, 42, .46); }
+.mobile-connect-dialog section { position: relative; z-index: 1; width: min(100%, 360px); padding: 28px; border-radius: 20px; background: #fff; box-shadow: 0 24px 60px rgba(15, 23, 42, .28); color: var(--ink); }
+.mobile-connect-dialog-close { position: absolute; top: 12px; right: 12px; display: grid; width: 34px; height: 34px; place-items: center; border: 0; border-radius: 10px; background: #f1f5f9; color: #475569; }
+.mobile-connect-dialog-icon { display: grid; width: 42px; height: 42px; padding: 10px; border-radius: 12px; background: var(--brand); color: #fff; font-size: 22px; }
+.mobile-connect-dialog h2 { margin: 16px 0 6px; font-size: 21px; }
+.mobile-connect-dialog p { margin: 0 0 20px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.mobile-connect-dialog-action { display: grid; width: 100%; min-height: 46px; place-items: center; border: 0; border-radius: 12px; background: var(--brand); color: #fff; font-weight: 700; }
+.mobile-connect-dialog small { display: block; margin-top: 12px; color: #b91c1c; line-height: 1.4; }
 @keyframes drawer-enter { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 @keyframes drawer-fade { from { opacity: 0; } to { opacity: 1; } }
 .mobile-honey { position: absolute; z-index: 6; right: 8px; bottom: calc(70px + env(safe-area-inset-bottom)); }

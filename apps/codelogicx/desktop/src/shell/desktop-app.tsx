@@ -3,6 +3,7 @@ import {
   Bot,
   BrainCircuit,
   Box,
+  Cable,
   CircleDot,
   Cloud,
   CloudCog,
@@ -364,9 +365,20 @@ export function DesktopApp() {
               </button>
             ))}
           </div>
-          <button aria-label="Open settings" onClick={() => ui.setDrawerOpen(true)} type="button">
-            <Settings size={21} />
-          </button>
+          <div className="activity-footer">
+            <button
+              aria-label="Open Connect Service"
+              className={ui.activity === "connect-service" ? "active" : ""}
+              onClick={() => ui.setActivity("connect-service")}
+              title="Connect Service"
+              type="button"
+            >
+              <Cable size={21} />
+            </button>
+            <button aria-label="Open settings" onClick={() => ui.setDrawerOpen(true)} title="Settings" type="button">
+              <Settings size={21} />
+            </button>
+          </div>
         </nav>
         {!isFullWorkspace(ui.activity) ? (
           <aside className="side-panel">
